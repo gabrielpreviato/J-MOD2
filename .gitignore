@@ -30,6 +30,6 @@ baselines/*
 
 # developer environments
 .idea
-
+venv/*
 *.csv
 *.bag

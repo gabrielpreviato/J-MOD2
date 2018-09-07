@@ -7,7 +7,7 @@ import cv2
 import keras.optimizers
 import matplotlib.pyplot as plt
 from lib.DataGenerationStrategy import *
-from lib.Dataset import UnrealDataset_Autoencoder
+from lib.Dataset import UnrealDatasetAutoencoder
 from keras.layers import Input, Dense, Flatten, Reshape, Concatenate
 from keras.models import Model
 
@@ -32,7 +32,7 @@ class BaseDenoisingAE(AbstractModel):
 
     def load_dataset(self):
         if self.config.dataset is 'UnrealDataset':
-            dataset = UnrealDataset_Autoencoder(self.config, 'segmentation', SampleGenerationStrategy)
+            dataset = UnrealDatasetAutoencoder(self.config, 'segmentation', SampleGenerationStrategy)
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'UnrealDataset'
             return dataset, dataset_name
@@ -120,7 +120,7 @@ class SegmentationDenoisingAE(BaseDenoisingAE):
 
     def load_dataset(self):
         if self.config.dataset is 'UnrealDataset':
-            dataset = UnrealDataset_Autoencoder(self.config, 'segmentation2', SegmentationAutoEncoderGenerationStrategy, 'Unreal_Segmentation')
+            dataset = UnrealDatasetAutoencoder(self.config, 'segmentation2', SegmentationAutoEncoderGenerationStrategy, 'Unreal_Segmentation')
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'unreal_segm'
             return dataset, dataset_name
@@ -191,7 +191,7 @@ class RGBDenoisingAE(BaseDenoisingAE):
 
     def load_dataset(self):
         if self.config.dataset is 'UnrealDataset':
-            dataset = UnrealDataset_Autoencoder(self.config, 'rgb', RGB_SingleChannel_AutoEncoderGenerationStrategy, 'Unreal_RGB')
+            dataset = UnrealDatasetAutoencoder(self.config, 'rgb', RGB_SingleChannel_AutoEncoderGenerationStrategy, 'Unreal_RGB')
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'unreal_rgb'
             return dataset, dataset_name
@@ -258,7 +258,7 @@ class DepthDenoisingAE(BaseDenoisingAE):
 
     def load_dataset(self):
         if self.config.dataset is 'UnrealDataset':
-            dataset = UnrealDataset_Autoencoder(self.config, 'depth', DepthAutoEncoderGenerationStrategy, 'Unreal_Depth')
+            dataset = UnrealDatasetAutoencoder(self.config, 'depth', DepthAutoEncoderGenerationStrategy, 'Unreal_Depth')
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'unreal_depth'
             return dataset, dataset_name
@@ -321,7 +321,7 @@ class FullMAE(BaseDenoisingAE):
 
     def load_dataset(self):
         if self.config.dataset is 'UnrealDataset':
-            dataset = UnrealDataset_Autoencoder(self.config, 'full', FullMAEGenerationStrategy, 'Unreal_FULL')
+            dataset = UnrealDatasetAutoencoder(self.config, 'full', FullMAEGenerationStrategy, 'Unreal_FULL')
 
             dataset.data_generation_strategy.mean = [np.load('{}/{}/{}_mean.npy'.format(self.config.data_set_dir, self.config.data_main_dir, "Unreal_Depth")),
                                                      np.load('{}/{}/{}_mean.npy'.format(self.config.data_set_dir,

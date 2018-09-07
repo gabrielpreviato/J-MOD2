@@ -12,7 +12,7 @@ import numpy as np
 
 from DepthFCNModel import DepthFCNModel
 
-from lib.Dataset import UnrealDataset_DepthSupervised
+from lib.Dataset import UnrealDatasetDepthSupervised
 from lib.DataGenerationStrategy import SingleFrameGenerationStrategy, PairGenerationStrategy
 
 from keras.optimizers import Adam, Adadelta, SGD
@@ -22,8 +22,8 @@ from lib.EvaluationUtils import get_detected_obstacles_from_detector
 class JMOD2(DepthFCNModel):
 
     def load_dataset(self):
-        dataset = UnrealDataset_DepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame,
-                                                                           get_obstacles=True), read_obstacles=True)
+        dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame,
+                                                                                          get_obstacles=True), read_obstacles=True)
         dataset.data_generation_strategy.mean = dataset.mean
         dataset_name = 'UnrealDataset'
 

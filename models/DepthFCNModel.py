@@ -9,7 +9,7 @@ from lib.DepthObjectives import root_mean_squared_logarithmic_loss, root_mean_sq
 from lib.DepthMetrics import rmse_metric, logrmse_metric, sc_inv_logrmse_metric
 from lib.DataGenerationStrategy import SingleFrameGenerationStrategy
 from lib.SampleType import Depth_SingleFrame
-from lib.Dataset import UnrealDataset_DepthSupervised
+from lib.Dataset import UnrealDatasetDepthSupervised
 
 import numpy as np
 from models.FullyConvolutionalModel import FullyConvolutionalModel
@@ -21,7 +21,7 @@ class DepthFCNModel(FullyConvolutionalModel):
 
     def load_dataset(self):
         if self.config.dataset is 'UnrealDataset':
-            dataset = UnrealDataset_DepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=Depth_SingleFrame))
+            dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=Depth_SingleFrame))
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'UnrealDataset'
             return dataset, dataset_name
