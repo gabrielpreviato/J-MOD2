@@ -67,7 +67,7 @@ class DepthObstacles_SingleFrame(AbstractSample):
         obstacles_label = np.zeros(shape=(5,8,7))
 
         for obs in obstacles:
-            parsed_str_obs = obs.split()
+            parsed_str_obs = obs.split(",")
             parsed_obs = np.zeros(shape=(8))
             i = 0
             for n in parsed_str_obs:

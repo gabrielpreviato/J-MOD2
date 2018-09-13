@@ -10,6 +10,7 @@ from lib.DepthMetrics import rmse_metric, logrmse_metric, sc_inv_logrmse_metric
 from lib.DataGenerationStrategy import SingleFrameGenerationStrategy
 from lib.SampleType import Depth_SingleFrame
 from lib.Dataset import UnrealDatasetDepthSupervised
+from lib.Dataset import SoccerFieldDatasetDepthSupervised
 
 import numpy as np
 from models.FullyConvolutionalModel import FullyConvolutionalModel
@@ -24,6 +25,12 @@ class DepthFCNModel(FullyConvolutionalModel):
             dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=Depth_SingleFrame))
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'UnrealDataset'
+            return dataset, dataset_name
+
+        if self.config.dataset is 'Soccer':
+            dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=Depth_SingleFrame))
+            dataset.data_generation_strategy.mean = dataset.mean
+            dataset_name = 'Soccer'
             return dataset, dataset_name
 
 

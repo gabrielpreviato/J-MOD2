@@ -13,6 +13,7 @@ import numpy as np
 from DepthFCNModel import DepthFCNModel
 
 from lib.Dataset import UnrealDatasetDepthSupervised
+from lib.Dataset import SoccerFieldDatasetDepthSupervised
 from lib.DataGenerationStrategy import SingleFrameGenerationStrategy, PairGenerationStrategy
 
 from keras.optimizers import Adam, Adadelta, SGD
@@ -22,12 +23,24 @@ from lib.EvaluationUtils import get_detected_obstacles_from_detector
 class JMOD2(DepthFCNModel):
 
     def load_dataset(self):
-        dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame,
-                                                                                          get_obstacles=True), read_obstacles=True)
-        dataset.data_generation_strategy.mean = dataset.mean
-        dataset_name = 'UnrealDataset'
+        print 1
+        print self.config.dataset
 
-        return dataset, dataset_name
+        if self.config.dataset == 'UnrealDataset':
+            dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame,
+                                                                                              get_obstacles=True), read_obstacles=True)
+            dataset.data_generation_strategy.mean = dataset.mean
+            dataset_name = 'UnrealDataset'
+            return dataset, dataset_name
+
+        elif self.config.dataset == 'Soccer':
+            print 2
+            dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame,
+                                                                                                   get_obstacles=True), read_obstacles=True)
+            dataset.data_generation_strategy.mean = dataset.mean
+            dataset_name = 'Soccer'
+            return dataset, dataset_name
+
 
     def prepare_data_for_model(self, features, label):
         features = np.asarray(features)

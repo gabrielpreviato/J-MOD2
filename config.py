@@ -19,13 +19,13 @@ net_arg = add_argument_group('Network')
 data_arg = add_argument_group('Data')
 
 data_arg.add_argument('--data_set_dir', type=str, default='data/UnrealDataset')
-#data_arg.add_argument('--dataset', type=str, default='UnrealDataset', choices=['UnrealDataset', 'Satellite'])
+data_arg.add_argument('--dataset', type=str, default='UnrealDataset', choices=['UnrealDataset', 'Satellite', 'Soccer'])
 data_arg.add_argument('--use_subsampled', type=str2bool, default=False)
 data_arg.add_argument('--compute_mean', type=str2bool, default=False)
 
 data_arg.add_argument('--data_main_dir', type=str, default='')
-data_arg.add_argument('--data_train_dirs', type=eval, nargs='+', default=['00_D','01_D','02_D','03_D','04_D','05_D','06_D','07_D','08_D','10_D','11_D','13_D','15_D','16_D','17_D','18_D','19_D','20_D'])
-data_arg.add_argument('--data_test_dirs', type=eval, nargs='+', default=['09_D','14_D'])
+data_arg.add_argument('--data_train_dirs', type=str, nargs='+', default=['00_D','01_D','02_D','03_D','04_D','05_D','06_D','07_D','08_D','10_D','11_D','13_D','15_D','16_D','17_D','18_D','19_D','20_D'])
+data_arg.add_argument('--data_test_dirs', type=str, nargs='+', default=['09_D','14_D'])
 
 data_arg.add_argument('--input_height', type=int, default=160)#orig 376
 data_arg.add_argument('--input_width', type=int, default=256)#orig 1240

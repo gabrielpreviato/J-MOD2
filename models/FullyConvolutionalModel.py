@@ -27,6 +27,10 @@ class FullyConvolutionalModel(AbstractModel):
         self.is_deploy = config.is_deploy
         super(FullyConvolutionalModel, self).__init__(config)
 
+    def load_dataset(self):
+
+        raise ("Not implemented - this is an abstract method")
+
     def prepare_data(self):
 
         if not self.is_deploy:
