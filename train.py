@@ -23,8 +23,10 @@ def main(_):
   trainer = Trainer(config, model, rng)
 
   if config.is_train:
-     trainer.train()
-     #trainer.resume_training()
+     if config.resume_training:
+       trainer.resume_training()
+     else:
+       trainer.train()
   else:
      trainer.test(showFigure=True)
 
