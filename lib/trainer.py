@@ -31,4 +31,4 @@ class Trainer(object):
 
   def resume_training(self):
     print("resuming training from weights file: ", self.config.weights_path)
-    self.model.resume_training(self.config.weights_path, 50)
+    self.model.resume_training(self.config.weights_path, self.config.resumed_epoch)

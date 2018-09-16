@@ -62,6 +62,7 @@ train_arg.add_argument('--learning_rate', type=float, default=1e-5, help='')
 
 train_arg.add_argument('--weights_path', type=str, default="") #Used for finetuning or to resume training
 train_arg.add_argument('--resume_training',type=str2bool, default=False)
+train_arg.add_argument('--resumed_epoch', type=int, default=0, help='')
 
 # Misc
 misc_arg = add_argument_group('Misc')

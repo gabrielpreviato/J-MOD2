@@ -33,7 +33,7 @@ model_name = 'jmod2'
 
 model, detector_only = EvaluationUtils.load_model(model_name, config)
 
-showImages = False
+showImages = True
 
 dataset_main_dir = config.data_set_dir
 test_dirs = config.data_test_dirs
