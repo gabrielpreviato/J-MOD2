@@ -1,0 +1,2 @@
+python2.7 train.py --data_set_dir data/dataset/ --data_train_dirs data1 --data_test_dirs data1 --is_train True --dataset Soccer --is_deploy False --gpu_memory_fraction 0.8 --exp-name "training_with_weight" --weights_path "/home/previato/weights/jmod2.hdf5" --resume_training True
+
