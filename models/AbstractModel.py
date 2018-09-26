@@ -25,6 +25,7 @@ class AbstractModel(object):
         self.data_augmentation_strategy = None
         self.model = self.build_model()
         self.mean = None
+        self.history = {}
 
         self.prepare_data()
         self.shuffle = shuffle_data
@@ -181,7 +182,7 @@ class AbstractModel(object):
             os.path.join(self.config.model_dir, 'weights-{epoch:02d}-{loss:.2f}.hdf5'),
             monitor='loss', verbose=2,
             save_best_only=False, save_weights_only=False, mode='auto', period=self.config.log_step)
-        self.model.fit_generator(generator=self.train_data_generator(),
+        self.history = self.model.fit_generator(generator=self.train_data_generator(),
                                  steps_per_epoch=samples_per_epoch,
                                  callbacks=[pb, model_checkpoint, tb],
                                  validation_data=self.validation_data_generator(),
@@ -190,6 +191,26 @@ class AbstractModel(object):
                                  verbose=2,
                                  initial_epoch=initial_epoch)
         t1 = time.time()
+
+        # Plot training & validation accuracy values
+        plt.plot(self.history.history['acc'])
+        plt.plot(self.history.history['val_acc'])
+        plt.title('Model accuracy')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("accuracy_" + self.config.exp_name + ".png")
+
+
+        # Plot training & validation loss values
+        plt.plot(self.history.history['loss'])
+        plt.plot(self.history.history['val_loss'])
+        plt.title('Model loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("loss_" + self.config.exp_name + ".png")
+
 
         print("Training completed in " + str(t1 - t0) + " seconds")
 
