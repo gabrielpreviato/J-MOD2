@@ -73,6 +73,8 @@ misc_arg.add_argument('--debug', type=str2bool, default=True)
 misc_arg.add_argument('--gpu_memory_fraction', type=float, default=0.5)
 misc_arg.add_argument('--max_image_summary',type=int, default=4)
 
+misc_arg.add_argument('--graphs_dir', type=str, default='graphs')
+
 
 def get_config():
   config, unparsed = parser.parse_known_args()
