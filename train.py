@@ -1,14 +1,14 @@
 import sys
 
+import matplotlib
+matplotlib.use('Agg')
+
 import numpy as np
 import tensorflow as tf
 from models.JMOD2 import JMOD2
 from models.DetectorModel import Detector
 #import whatever model you need to train here
 from lib.trainer import Trainer
-import matplotlib
-matplotlib.use('Agg')
-
 from config import get_config
 from lib.utils import prepare_dirs
 
