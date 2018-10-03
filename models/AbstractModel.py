@@ -35,11 +35,9 @@ class AbstractModel(object):
 
         raise ("Not implemented - this is an abstract method")
 
-
     def plot_graphs(self):
 
         raise ("Not implemented - this is an abstract method")
-
 
     def train_data_generator(self):
 
@@ -197,8 +195,7 @@ class AbstractModel(object):
                                  initial_epoch=initial_epoch)
         t1 = time.time()
 
-
-
+        self.plot_graphs()
 
         print("Training completed in " + str(t1 - t0) + " seconds")
 
