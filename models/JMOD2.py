@@ -20,10 +20,6 @@ from keras.optimizers import Adam, Adadelta, SGD
 
 from lib.EvaluationUtils import get_detected_obstacles_from_detector
 
-import matplotlib
-
-matplotlib.use('Agg')
-
 import matplotlib.pyplot as plt
 
 class JMOD2(DepthFCNModel):
