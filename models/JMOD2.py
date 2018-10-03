@@ -104,7 +104,7 @@ class JMOD2(DepthFCNModel):
         plt.ylabel('Detection Precision')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig("detection_precision_" + self.config.exp_name + ".png")
+        plt.savefig(self.config.graphs_dir + "/detection_precision_" + self.config.exp_name + ".png")
 
         plt.close()
 
@@ -115,7 +115,7 @@ class JMOD2(DepthFCNModel):
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig("model_loss_" + self.config.exp_name + ".png")
+        plt.savefig(self.config.graphs_dir + "/model_loss_" + self.config.exp_name + ".png")
 
         plt.close()
 
@@ -125,7 +125,7 @@ class JMOD2(DepthFCNModel):
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig("depth_loss_" + self.config.exp_name + ".png")
+        plt.savefig(self.config.graphs_dir + "/depth_loss_" + self.config.exp_name + ".png")
 
         plt.close()
 
@@ -135,7 +135,7 @@ class JMOD2(DepthFCNModel):
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig("detec_loss_" + self.config.exp_name + ".png")
+        plt.savefig(self.config.graphs_dir + "/detec_loss_" + self.config.exp_name + ".png")
 
         plt.close()
 
@@ -145,7 +145,7 @@ class JMOD2(DepthFCNModel):
         plt.ylabel('RMSE metric')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig("depth_rmse_" + self.config.exp_name + ".png")
+        plt.savefig(self.config.graphs_dir + "/depth_rmse_" + self.config.exp_name + ".png")
 
         plt.close()
 
@@ -155,7 +155,7 @@ class JMOD2(DepthFCNModel):
         plt.ylabel('Log RMSE metric')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig("depth_log_rmse_" + self.config.exp_name + ".png")
+        plt.savefig(self.config.graphs_dir + "/depth_log_rmse_" + self.config.exp_name + ".png")
 
         plt.close()
 
@@ -165,7 +165,7 @@ class JMOD2(DepthFCNModel):
         plt.ylabel('Mean metric')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig("detec_mean_" + self.config.exp_name + ".png")
+        plt.savefig(self.config.graphs_dir + "/detec_mean_" + self.config.exp_name + ".png")
 
         plt.close()
 
@@ -175,7 +175,7 @@ class JMOD2(DepthFCNModel):
         plt.ylabel('Variance metric')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig(self.config.graphs_dir + "detec_variance_" + self.config.exp_name + ".png")
+        plt.savefig(self.config.graphs_dir + "/detec_variance_" + self.config.exp_name + ".png")
 
         plt.close()
 
