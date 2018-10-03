@@ -36,6 +36,11 @@ class AbstractModel(object):
         raise ("Not implemented - this is an abstract method")
 
 
+    def plot_graphs(self):
+
+        raise ("Not implemented - this is an abstract method")
+
+
     def train_data_generator(self):
 
         if self.shuffle:
@@ -192,24 +197,7 @@ class AbstractModel(object):
                                  initial_epoch=initial_epoch)
         t1 = time.time()
 
-        # Plot training & validation accuracy values
-        plt.plot(self.history.history['acc'])
-        plt.plot(self.history.history['val_acc'])
-        plt.title('Model accuracy')
-        plt.ylabel('Accuracy')
-        plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig("accuracy_" + self.config.exp_name + ".png")
 
-
-        # Plot training & validation loss values
-        plt.plot(self.history.history['loss'])
-        plt.plot(self.history.history['val_loss'])
-        plt.title('Model loss')
-        plt.ylabel('Loss')
-        plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig("loss_" + self.config.exp_name + ".png")
 
 
         print("Training completed in " + str(t1 - t0) + " seconds")

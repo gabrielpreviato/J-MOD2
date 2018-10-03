@@ -20,6 +20,8 @@ from keras.optimizers import Adam, Adadelta, SGD
 
 from lib.EvaluationUtils import get_detected_obstacles_from_detector
 
+import matplotlib.pyplot as plt
+
 class JMOD2(DepthFCNModel):
 
     def load_dataset(self):
@@ -89,10 +91,29 @@ class JMOD2(DepthFCNModel):
         opt = Adam(lr=self.config.learning_rate, clipnorm = 1.)
         model.compile(loss={'depth_output': log_normals_loss, 'detection_output':yolo_v1_loss},
                             optimizer=opt,
-                            metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric], 'detection_output': [iou_metric, recall, precision, mean_metric, variance_metric]},
+                            metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric], 'detection_output': [iou_metric, recall, precision, mean_metric, variance_metric], 'accuracy': ['accuracy']},
                             loss_weights=[1.0, 1.0])
         model.summary()
         return model
+
+    def plot_graphs(self):
+        # Plot training & validation accuracy values
+        plt.plot(self.history.history['detection_output_precision'])
+        plt.plot(self.history.history['val_detection_output_precision'])
+        plt.title('Model detection precision')
+        plt.ylabel('Detection Precision')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("detection_precision_" + self.config.exp_name + ".png")
+
+        # Plot training & validation loss values
+        plt.plot(self.history.history['loss'])
+        plt.plot(self.history.history['val_loss'])
+        plt.title('Model loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("loss_" + self.config.exp_name + ".png")
 
     def run(self, input):
         #import time
