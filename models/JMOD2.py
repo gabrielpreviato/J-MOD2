@@ -106,6 +106,8 @@ class JMOD2(DepthFCNModel):
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.savefig("detection_precision_" + self.config.exp_name + ".png")
 
+        plt.close()
+
         # Plot training & validation loss values
         plt.plot(self.history.history['loss'])
         plt.plot(self.history.history['val_loss'])
@@ -114,6 +116,69 @@ class JMOD2(DepthFCNModel):
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.savefig("loss_" + self.config.exp_name + ".png")
+
+        plt.close()
+
+        plt.plot(self.history.history['depth_output_loss'])
+        plt.plot(self.history.history['val_depth_output_loss'])
+        plt.title('Depth loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("loss_" + self.config.exp_name + ".png")
+
+        plt.close()
+
+        plt.plot(self.history.history['detection_output_loss'])
+        plt.plot(self.history.history['val_detection_output_loss'])
+        plt.title('Detection loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("loss_" + self.config.exp_name + ".png")
+
+        plt.close()
+
+        plt.plot(self.history.history['depth_output_rmse_metric'])
+        plt.plot(self.history.history['val_depth_output_rmse_metric'])
+        plt.title('Depth RMSE metric')
+        plt.ylabel('RMSE metric')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("loss_" + self.config.exp_name + ".png")
+
+        plt.close()
+
+        plt.plot(self.history.history['depth_output_logrmse_metric'])
+        plt.plot(self.history.history['val_depth_output_logrmse_metric'])
+        plt.title('Depth Log RMSE metric')
+        plt.ylabel('Log RMSE metric')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("loss_" + self.config.exp_name + ".png")
+
+        plt.close()
+
+        plt.plot(self.history.history['detection_output_mean_metric'])
+        plt.plot(self.history.history['val_detection_output_mean_metric'])
+        plt.title('Detection Mean metric')
+        plt.ylabel('Mean metric')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("loss_" + self.config.exp_name + ".png")
+
+        plt.close()
+
+        plt.plot(self.history.history['detection_output_variance_metric'])
+        plt.plot(self.history.history['val_detection_output_variance_metric'])
+        plt.title('Detection Variance metric')
+        plt.ylabel('Variance metric')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig("loss_" + self.config.exp_name + ".png")
+
+        plt.close()
+
 
     def run(self, input):
         #import time
