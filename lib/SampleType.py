@@ -220,10 +220,10 @@ class DepthDenoisingAESample(ImageDenoisingAESample):
     def convert_depth_to_meters(self, depth):
         depth = np.asarray(depth)
         depth = depth.astype('float32')
-        # depth = depth * 39.75 / 255.0
+        # depth = depth * 19.75 / 255.0
         depth = -4.586e-09 * (depth ** 4) + 3.382e-06 * (depth ** 3) - 0.000105 * (
         depth ** 2) + 0.04239 * depth + 0.04072
-        depth /= 39.75
+        depth /= 19.75
 
         return depth
 

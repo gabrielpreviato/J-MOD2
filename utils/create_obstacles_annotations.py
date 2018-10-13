@@ -113,8 +113,8 @@ def find_obstacles(depth, segmentation, depth_thr, segm_thr, f_segm_thr, IMG_WID
         w_o = w / IMG_WIDTH
         h_o = h / IMG_HEIGHT
 
-        mean = obstacle.depth_mean / 39.75
-        variance = obstacle.depth_variance * 0.01 / 39.75
+        mean = obstacle.depth_mean / 19.75
+        variance = obstacle.depth_variance * 0.01 / 19.75
 
         if obstacle.valid_points > MIN_OBS_AREA and mean > 0:
             cv2.rectangle(segmentation, (x, y), (x + w, y + h), (0, 255, 0), 2)

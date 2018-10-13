@@ -19,7 +19,7 @@ def depth_to_meters_airsim(depth):
     return depth
 
 def depth_to_meters_base(depth):
-    return depth * 39.75 / 255.
+    return depth * 19.75 / 255.
 
 
 class Obstacle(object):
@@ -234,8 +234,8 @@ def get_detected_obstacles_from_detector(prediction, confidence_thr = 0.65, outp
     y_pos = prediction[0, :, 2] * confidence
     ws = prediction[0, :, 3] * confidence
     hs = prediction[0, :, 4] * confidence
-    depth = prediction[0, :, 5] * confidence * 39.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
-    variance = prediction[0, :,6] * confidence * 39.75 * 1000  # J-MOD2 was trained with normalized variances scaled down by 1000
+    depth = prediction[0, :, 5] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
+    variance = prediction[0, :,6] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled down by 1000
 
     IMG_WIDTH = 256
     IMG_HEIGHT = 160

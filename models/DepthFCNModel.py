@@ -42,9 +42,9 @@ class DepthFCNModel(FullyConvolutionalModel):
 
         label = np.asarray(label)
         label = label.astype('float32')
-        #label = label * 39.75 / 255.0
+        #label = label * 19.75 / 255.0
         label = -4.586e-09 * (label ** 4) + 3.382e-06 * (label ** 3) - 0.000105 * (label ** 2) + 0.04239 * label + 0.04072
-        label /= 39.75
+        label /= 19.75
 
 
         return features, label
@@ -125,9 +125,8 @@ class DepthFCNModel(FullyConvolutionalModel):
 
         #print ("Elapsed time: {}").format(time.time() - t0)
 
-        pred_depth = net_output[0] * 39.75
+        pred_depth = net_output[0] * 19.75
 
         pred_depth = np.expand_dims(pred_depth,0)
 
         return [pred_depth,None,None]
-

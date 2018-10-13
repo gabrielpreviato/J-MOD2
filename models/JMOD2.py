@@ -57,7 +57,7 @@ class JMOD2(DepthFCNModel):
             elem["depth"] = np.asarray(elem["depth"]).astype(np.float32)
 
             elem["depth"] = -4.586e-09 * (elem["depth"] ** 4) + 3.382e-06 * (elem["depth"] ** 3) - 0.000105 * (elem["depth"] ** 2) + 0.04239 * elem["depth"] + 0.04072
-            elem["depth"] /= 39.75
+            elem["depth"] /= 19.75
 
             labels_depth[i,:,:,:] = elem["depth"]
             labels_obs[i,:,:] = np.asarray(elem["obstacles"]).astype(np.float32)
@@ -204,7 +204,7 @@ class JMOD2(DepthFCNModel):
 
         #print ("Elapsed time: {}").format(time.time() - t0)
 
-        pred_depth = net_output[0] * 39.75
+        pred_depth = net_output[0] * 19.75
         pred_detection = net_output[1]
 
         pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector(pred_detection, self.config.detector_confidence_thr)
@@ -234,8 +234,3 @@ class JMOD2(DepthFCNModel):
         else:
             mean_corr = 1
         return mean_corr
-
-
-
-
-
