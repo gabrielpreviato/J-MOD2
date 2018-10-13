@@ -61,5 +61,18 @@ try:
 except OSError as e:
     print >>file, "Execution failed:", e
 
+try:
+    retcode = subprocess.call(
+        "python2.7 train.py" + "--is_train True --dataset UnrealDataset --is_deploy False --exp_name unreal-non-trained-240 --num_epochs 240 --gpu_memory_fraction 0.9",
+        shell=True)
+    print >> file, "non-trained-240:"
+
+    if retcode < 0:
+        print >>file, "Child was terminated by signal", -retcode
+    else:
+        print >>file, "Child returned", retcode,
+except OSError as e:
+    print >>file, "Execution failed:", e
+
 
 file.close()
