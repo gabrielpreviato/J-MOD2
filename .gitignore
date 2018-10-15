@@ -33,3 +33,4 @@ baselines/*
 venv/*
 *.csv
 *.bag
+env/*
