@@ -6,6 +6,10 @@ import os
 from glob import glob
 from lib.Evaluators import JMOD2Stats
 
+# python evaluate_on_soccerfield.py --data_set_dir /data --data_train_dirs 09_D --data_test_dirs 09_D --is_train
+# False --dataset Soccer --is_deploy False --weights_path weights/nt-180-0.02.hdf5 --resume_training True
+
+
 
 def preprocess_data(rgb, gt, seg, w=256, h=160, crop_w=0, crop_h=0, resize_only_rgb = False):
     crop_top = np.floor((rgb.shape[0] - crop_h) / 2).astype(np.uint8)
@@ -41,6 +45,7 @@ test_dirs = config.data_test_dirs
 #compute_depth_branch_stats_on_obs is set to False when evaluating detector-only models
 jmod2_stats = JMOD2Stats(model_name, compute_depth_branch_stats_on_obs=not detector_only)
 
+i = 0
 
 for test_dir in test_dirs:
     depth_gt_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'depth', '*' + '.png')))
@@ -80,10 +85,12 @@ for test_dir in test_dirs:
 
         if showImages:
             if results[1] is not None:
-                EvaluationUtils.show_detections(rgb_raw, results[1], gt_obs, sleep_for=10)
+                EvaluationUtils.show_detections(rgb_raw, results[1], gt_obs, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
             if results[0] is not None:
-                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt,sleep_for=10)
+                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
 
         jmod2_stats.run(results, [depth_gt, gt_obs])
+
+        i += 1
 
 results = jmod2_stats.return_results()

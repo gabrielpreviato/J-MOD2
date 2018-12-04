@@ -457,7 +457,7 @@ def load_model(name, config):
 
     if name is 'jmod2':
         model = JMOD2(config)
-        model.model.load_weights("../weights/jmod2.hdf5")
+        model.model.load_weights("weights/unreal-240-0.05.hdf5")
         detector_only = False
 
     elif name is 'cadena':
