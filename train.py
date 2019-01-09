@@ -1,6 +1,9 @@
 import sys
 
 import matplotlib
+
+from models.EigenModel import EigenModel_Scale2
+
 matplotlib.use('Agg')
 
 import numpy as np
@@ -21,7 +24,8 @@ def main(_):
   rng = np.random.RandomState(config.random_seed)
   tf.set_random_seed(config.random_seed)
 
-  model = JMOD2(config)
+  # model = JMOD2(config)
+  model = EigenModel_Scale2(config)
   trainer = Trainer(config, model, rng)
 
   if config.is_train:

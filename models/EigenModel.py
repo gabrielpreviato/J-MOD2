@@ -4,6 +4,9 @@ from keras.layers import Reshape, Flatten,Convolution2D, Lambda, Input, MaxPooli
 from keras.layers import Dense
 from keras.layers.merge import Concatenate
 from keras.applications.vgg16 import VGG16
+
+from lib.DataGenerationStrategy import SingleFrameGenerationStrategy
+from lib.Dataset import UnrealDatasetDepthSupervised, SoccerFieldDatasetDepthSupervised
 from lib.DepthObjectives import eigen_loss
 from lib.DepthMetrics import rmse_metric, logrmse_metric, sc_inv_logrmse_metric
 
@@ -15,21 +18,57 @@ from DepthFCNModel import DepthFCNModel
 
 from keras.optimizers import Adam, Adadelta, SGD
 
+from lib.SampleType import DepthObstacles_SingleFrame
+
 
 class EigenModel_Scale2(DepthFCNModel):
+    def load_dataset(self):
+        print 1
+        print self.config.dataset
+
+        if self.config.dataset == 'UnrealDataset':
+            dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame,
+                                                                                              get_obstacles=True), read_obstacles=True)
+            dataset.data_generation_strategy.mean = dataset.mean
+            dataset_name = 'UnrealDataset'
+            return dataset, dataset_name
+
+        elif self.config.dataset == 'Soccer':
+            print 2
+            dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame,
+                                                                                                   get_obstacles=True), read_obstacles=True)
+            dataset.data_generation_strategy.mean = dataset.mean
+            dataset_name = 'Soccer'
+            return dataset, dataset_name
+
     def prepare_data_for_model(self, features, label):
         features = np.asarray(features)
         features = features.astype('float32')
 
         features /= 255.0
-        label = np.asarray(label)
-        label = label.astype('float32')
-        # label = label * 39.75 / 255.0
-        label = -4.586e-09 * (label ** 4) + 3.382e-06 * (label ** 3) - 0.000105 * (
-        label ** 2) + 0.04239 * label + 0.04072
-        label /= 39.75
+
+        # label = np.asarray(label["depth"])
+        # label = label.astype('float32')
+        # # label = label * 39.75 / 255.0
+        # label = -4.586e-09 * (label ** 4) + 3.382e-06 * (label ** 3) - 0.000105 * (
+        # label ** 2) + 0.04239 * label + 0.04072
+        # label /= 19.75
+
+        labels_depth = np.zeros(shape=(features.shape[0], features.shape[1], features.shape[2], 1), dtype=np.float32)
+        i = 0
+        for elem in label:
+            elem["depth"] = np.asarray(elem["depth"]).astype(np.float32)
+
+            elem["depth"] = -4.586e-09 * (elem["depth"] ** 4) + 3.382e-06 * (elem["depth"] ** 3) - 0.000105 * (elem["depth"] ** 2) + 0.04239 * elem["depth"] + 0.04072
+            elem["depth"] /= 19.75
+
+            labels_depth[i, :, :, :] = elem["depth"]
+
+            i += 1
 
         # label = tf.image.resize_images(label, [80, 128])
+
+        label = labels_depth
 
         label_resize = np.zeros(shape=(label.shape[0], 40, 64, 1))
 
