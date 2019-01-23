@@ -29,6 +29,37 @@ def preprocess_data(rgb, gt, seg, w=256, h=160, crop_w=0, crop_h=0, resize_only_
         seg = cv2.resize(seg, (w, h), cv2.INTER_NEAREST)
     return rgb, gt, seg
 
+def read_labels_gt_viewer(obstacles_gt):
+    with open(obstacles_gt, 'r') as f:
+        obstacles = f.readlines()
+    obstacles = [x.strip() for x in obstacles]
+
+    labels = []
+
+    for obs in obstacles:
+        parsed_str_obs = obs.split(" ")
+        parsed_obs = np.zeros(shape=(8))
+        i = 0
+        for n in parsed_str_obs:
+            if i < 2:
+                parsed_obs[i] = int(n)
+            else:
+                parsed_obs[i] = float(n)
+            i += 1
+
+        x = int(parsed_obs[0]*32 + parsed_obs[2]*32)
+        y = int(parsed_obs[1]*32 + parsed_obs[3]*32)
+        w = int(parsed_obs[4]*256)
+        h = int(parsed_obs[5]*160)
+
+        object = [[x - w/2, y - h/2, w, h],
+                  [parsed_obs[6], parsed_obs[7]]
+                  ]
+        labels.append(object)
+
+
+    return labels
+
 #edit config.py as required
 config, unparsed = get_config()
 
@@ -51,13 +82,14 @@ for test_dir in test_dirs:
     depth_gt_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'depth', '*' + '.png')))
     rgb_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'rgb', '*' + '.png')))
     seg_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'segmentation', '*' + '.png')))
+    obs_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'obstacles_10m', '*' + '.txt')))
 
-
-    for gt_path, rgb_path, seg_path in zip(depth_gt_paths, rgb_paths, seg_paths):
+    for gt_path, rgb_path, seg_path, obs_path in zip(depth_gt_paths, rgb_paths, seg_paths, obs_paths):
 
         rgb_raw = cv2.imread(rgb_path)
         gt = cv2.imread(gt_path, 0)
         seg = cv2.imread(seg_path, 0)
+        obs = read_labels_gt_viewer(obs_path)
 
         #Normalize input between 0 and 1, resize if required
 
@@ -81,7 +113,8 @@ for test_dir in test_dirs:
             results[2] = corr_depth
 
         #Get obstacles from GT segmentation and depth
-        gt_obs = EvaluationUtils.get_obstacles_from_seg_and_depth(gt, seg, segm_thr=-1)
+        #gt_obs = EvaluationUtils.get_obstacles_from_seg_and_depth(gt, seg, segm_thr=-1)
+        gt_obs = EvaluationUtils.get_obstacles_from_list(obs)
 
         if showImages:
             if results[1] is not None:
