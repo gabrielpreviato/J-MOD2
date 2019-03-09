@@ -197,6 +197,19 @@ def yolo_conf_loss(y_true, y_pred, t):
     loss = K.mean(loss1)
     return loss
 
+
+def yolo_class_loss(y_true, y_pred, t):
+    real_y_true = tf.where(t, y_true, K.zeros_like(y_true))
+    pobj = K.sigmoid(y_pred)
+    lo = K.square(real_y_true - pobj)
+    value_if_true = 5.0 * (lo)
+    value_if_false = 0.05 * (lo)
+    loss1 = tf.where(t, value_if_true, value_if_false)
+
+    loss = K.mean(loss1)
+    return loss
+
+
 def yoloxyloss(y_true, y_pred, t):
     #real_y_true = tf.where(t, y_true, K.zeros_like(y_true))
     lo = K.square(y_true - y_pred) + 0.05 * K.square(0.5 -y_pred)
@@ -258,5 +271,56 @@ def yolo_v1_loss(y_true, y_pred):
     loss = 2.0 * conf_loss + 0.25 * xy_loss + 0.25 * wh_loss + 1.5 * m_loss + 1.25 * v_loss # loss v1
     #loss = 2.0 * conf_loss + 0.1 * xy_loss + 1.0 * wh_loss + 5.0 * m_loss + 2.5 * v_loss  # loss v2
 
+    return loss
+
+
+def yolo_v1_loss_multiclass(y_true, y_pred):
+    # Y_PRED is Batchx40x9 tensor. y_true is a 40x9 tensor
+
+    truth_class1_tensor = K.expand_dims(y_true[:,:,0],2)#tf.slice(y_true, [0, 0, 0], [-1,-1, 0])
+    truth_class2_tensor = K.expand_dims(y_true[:, :, 1], 2)
+    truth_class3_tensor = K.expand_dims(y_true[:, :, 2], 2)
+    truth_xy_tensor = y_true[:,:,3:5]#tf.slice(y_true, [0, 0, 1], [-1,-1, 2])
+    truth_wh_tensor = y_true[:,:,5:7]#tf.slice(y_true, [0, 0, 3], [-1, -1, 4])
+    truth_m_tensor = K.expand_dims(y_true[:,:,7],2)#tf.slice(y_true, [0, 0, 5], [-1, -1, 5])
+    truth_v_tensor = K.expand_dims(y_true[:,:,8],2)#tf.slice(y_true, [0, 0, 6], [-1, -1, 6])
+
+    pred_class1_tensor = K.expand_dims(y_pred[:,:,0],2)#tf.slice(y_pred, [0, 0, 0], [-1, -1, 0])
+    pred_class2_tensor = K.expand_dims(y_pred[:, :, 1], 2)
+    pred_class3_tensor = K.expand_dims(y_pred[:, :, 2], 2)
+    #pred_conf_tensor = K.tanh(pred_conf_tensor)
+    pred_xy_tensor = y_pred[:,:,3:5]#tf.slice(y_pred, [0, 0, 1], [-1, -1, 2])
+    pred_wh_tensor = y_pred[:,:,5:7]#tf.slice(y_pred, [0, 0, 3], [-1, -1, 4])
+    pred_m_tensor = K.expand_dims(y_pred[:,:,7],2)#tf.slice(y_pred, [0, 0, 5], [-1, -1, 5])
+    pred_v_tensor = K.expand_dims(y_pred[:,:,8],2)#tf.slice(y_pred, [0, 0, 6], [-1, -1, 6])
+
+    truth_xy_tensor = tf.Print(truth_xy_tensor, [truth_xy_tensor[:, 14:20, 0]], message='truth_xy', summarize=30)
+    pred_xy_tensor = tf.Print(pred_xy_tensor, [pred_xy_tensor[:, 14:20, 0]], message='pred_xy', summarize=30)
+
+    tens_c1 = K.greater(K.sigmoid(truth_class1_tensor), 0.5)
+    tens_c2 = K.greater(K.sigmoid(truth_class2_tensor), 0.5)
+    tens_c3 = K.greater(K.sigmoid(truth_class3_tensor), 0.5)
+
+    # tens = tens_c1 || tens_c2 || tens_c3
+    tens = tf.math.logical_or(tens_c1, tens_c2)
+    tens = tf.math.logical_or(tens, tens_c3)
+
+    tens_2d = K.concatenate([tens,tens], axis=-1)
+
+    conf_loss = yolo_conf_loss(truth_class1_tensor, pred_class1_tensor,tens)
+
+    c1_loss = yolo_conf_loss(truth_class1_tensor, pred_class1_tensor, tens_c1)
+    c2_loss = yolo_conf_loss(truth_class2_tensor, pred_class2_tensor, tens_c2)
+    c3_loss = yolo_conf_loss(truth_class3_tensor, pred_class3_tensor, tens_c3)
+
+    xy_loss = yoloxyloss(truth_xy_tensor,pred_xy_tensor,tens_2d)
+    wh_loss = yolo_wh_loss(truth_wh_tensor,pred_wh_tensor,tens_2d)
+    m_loss = yolo_regressor_loss(truth_m_tensor,pred_m_tensor,tens)
+    v_loss = yolo_regressor_loss(truth_v_tensor,pred_v_tensor,tens)
+
+    # TODO: Check if 2 * cX_loss is a good value
+    loss = 2.0 * c1_loss + 2.0 * c2_loss + 2.0 * c3_loss + 0.25 * xy_loss + 0.25 * wh_loss + 1.5 * m_loss + 1.25 * v_loss  # loss v1
+    # loss = 2.0 * conf_loss + 0.25 * xy_loss + 0.25 * wh_loss + 1.5 * m_loss + 1.25 * v_loss # loss v1
+    #loss = 2.0 * conf_loss + 0.1 * xy_loss + 1.0 * wh_loss + 5.0 * m_loss + 2.5 * v_loss  # loss v2
 
     return loss
