@@ -305,9 +305,9 @@ def yolo_v1_loss_multiclass(y_true, y_pred):
     tens = tf.math.logical_or(tens_c1, tens_c2)
     tens = tf.math.logical_or(tens, tens_c3)
 
-    tens_2d = K.concatenate([tens,tens], axis=-1)
+    tens_2d = K.concatenate([tens, tens], axis=-1)
 
-    conf_loss = yolo_conf_loss(truth_class1_tensor, pred_class1_tensor,tens)
+    conf_loss = yolo_conf_loss(truth_class1_tensor, pred_class1_tensor, tens)
 
     c1_loss = yolo_conf_loss(truth_class1_tensor, pred_class1_tensor, tens_c1)
     c2_loss = yolo_conf_loss(truth_class2_tensor, pred_class2_tensor, tens_c2)

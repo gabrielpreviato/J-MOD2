@@ -9,6 +9,7 @@ matplotlib.use('Agg')
 import numpy as np
 import tensorflow as tf
 from models.JMOD2 import JMOD2
+from models.ODL import ODL
 from models.DetectorModel import Detector
 #import whatever model you need to train here
 from lib.trainer import Trainer
@@ -24,7 +25,7 @@ def main(_):
   rng = np.random.RandomState(config.random_seed)
   tf.set_random_seed(config.random_seed)
 
-  model = JMOD2(config)
+  model = ODL(config)
   # model = EigenModel_Scale2(config)
   trainer = Trainer(config, model, rng)
 
