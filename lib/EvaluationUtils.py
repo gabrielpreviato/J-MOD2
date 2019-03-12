@@ -8,6 +8,8 @@ import os
 
 from ObstacleDetectionObjectives import numpy_iou
 
+from Classes import *
+
 def depth_to_meters_airsim(depth):
 
     depth = depth.astype(np.float64)
@@ -100,6 +102,13 @@ class Obstacle(object):
 
         return math.sqrt(mean_rmse), math.sqrt(mean_variance), self.valid_points
 
+
+class ObstacleMulticlass(object):
+    def __init__(self, x, y, w, h, class_obj, depth_seg = None, obs_stats = None):
+        super(ObstacleMulticlass, self).__init__( x, y, w, h, depth_seg, obs_stats)
+
+        self.class_obj = class_obj
+
 def get_obstacles_from_seg_and_depth(depth, segm, depth_thr = 20, segm_thr = 55, f_segm_thr = cv2.THRESH_BINARY, is_gt = False):
     "Given segmentation and depth, get a list of obstacles objects. Depth_thr: max distance of obstacles Segm_thr= threshold between obstacle/non-obstacle classes"
 
@@ -143,6 +152,17 @@ def get_obstacles_from_list(list):
     obstacles = []
     for obstacle_def in list:
         obstacle = Obstacle(obstacle_def[0][0],obstacle_def[0][1],obstacle_def[0][2],obstacle_def[0][3], obs_stats = (obstacle_def[1][0], obstacle_def[1][1]))
+        obstacles.append(obstacle)
+
+    return obstacles
+
+def get_obstacles_from_list_multiclass(list):
+    """Get obstacles objects from a list of bounding boxes and depth stats where:
+                                        list = [[obs1],[obs2]...]
+                                        obs* = [(x,y,w,h),(mean, var)]"""
+    obstacles = []
+    for obstacle_def in list:
+        obstacle = ObstacleMulticlass(obstacle_def[0][0],obstacle_def[0][1],obstacle_def[0][2],obstacle_def[0][3], list[2], obs_stats = (obstacle_def[1][0], obstacle_def[1][1]))
         obstacles.append(obstacle)
 
     return obstacles
@@ -258,6 +278,58 @@ def get_detected_obstacles_from_detector(prediction, confidence_thr = 0.65, outp
 
     return obstacles, output_img
 
+
+def get_detected_obstacles_from_detector_multiclass(prediction, confidence_thr=0.65, output_img=None):
+    def sigmoid(x):
+        return 1 / (1 + math.exp(-x))
+
+    def vec_sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    if len(prediction.shape) == 2:
+        prediction = np.expand_dims(prediction, 0)
+
+    confidence_list = []
+    for val in prediction[0, :, 0:3]:
+        class_confidence = vec_sigmoid(val)
+
+        best_class = np.argmax(class_confidence)
+
+        confidence_list.append([class_confidence[best_class], Classes.generate_class(best_class)])
+
+    conf = np.asarray(confidence_list[:, 0], dtype=np.float32)
+    # Evaluate prediction only on high confidence detections. If confidence over a certain threshold, confidence = 1
+    confidence = np.where(conf > confidence_thr, 1, 0)
+    x_pos = prediction[0, :, 1] * confidence
+    y_pos = prediction[0, :, 2] * confidence
+    ws = prediction[0, :, 3] * confidence
+    hs = prediction[0, :, 4] * confidence
+    depth = prediction[0, :, 5] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
+    variance = prediction[0, :,
+               6] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled down by 1000
+
+    IMG_WIDTH = 256
+    IMG_HEIGHT = 160
+
+    detected_obstacles = []
+
+    for i in range(0, prediction.shape[1]):
+        if confidence[i] > 0:
+            # 32 e 8 sono numeri hardcoded rappresentat
+            x_top_left = int(np.floor(np.floor((int(i % 8) + x_pos[i]) * 32) - (ws[i] * IMG_WIDTH / 2)))
+            y_top_left = int(np.floor(((np.floor(i / 8) + y_pos[i]) * 32) - (hs[i] * IMG_HEIGHT / 2)))
+            w = ws[i] * IMG_WIDTH
+            h = hs[i] * IMG_HEIGHT
+
+            if output_img is not None:
+                cv2.rectangle(output_img, (x_top_left, y_top_left), (x_top_left + int(w), y_top_left + int(h)),
+                              confidence_list[i][1].color, 2)
+
+            detected_obstacles.append([(x_top_left, y_top_left, w, h), (depth[i], variance[i]), confidence_list[i][1]])
+    obstacles = get_obstacles_from_list_multiclass(detected_obstacles)
+
+    return obstacles, output_img
+
 def compute_detection_stats(detected_obstacles, gt_obstacles, iou_thresh = 0.25):
     #convert in Obstacle object the input list, created by get_detected_obstacles_from_detector
 
@@ -358,7 +430,7 @@ def compute_detection_stats(detected_obstacles, gt_obstacles, iou_thresh = 0.25)
 
 
 
-def show_detections(rgb, detection, gt=None, save = False, save_dir = None, file_name=None, print_depths=False, sleep_for = 50):
+def show_detections(rgb, detection, gt=None, save = False, save_dir = None, file_name=None, print_depths=False, sleep_for = 50, multiclass=False):
 
     if len(rgb.shape) == 4:
         rgb = rgb[0,:,:,:]

@@ -4,8 +4,8 @@ import os
 from glob import glob
 import math
 
-dataset_main_dir = '/data/dataset'
-test_dir = 'data5'
+dataset_main_dir = '/home/previato/LaRoCS/dataset'
+test_dir = 'data3'
 
 obs_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'obstacles_10m', '*' + '.txt')))
 
