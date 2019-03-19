@@ -39,7 +39,7 @@ def read_labels_gt_viewer(obstacles_gt):
 
     for obs in obstacles:
         parsed_str_obs = obs.split(" ")
-        parsed_obs = np.zeros(shape=(7))
+        parsed_obs = np.zeros(shape=(8))
         i = 0
         for n in parsed_str_obs:
             if i < 2:
@@ -70,13 +70,13 @@ def read_labels_gt_viewer_multiclass(obstacles_gt):
 
     for obs in obstacles:
         parsed_str_obs = obs.split(" ")
-        parsed_obs = np.zeros(shape=(8))
+        parsed_obs = np.zeros(shape=(9))
         i = 0
         for n in parsed_str_obs:
             if i < 2:
                 parsed_obs[i] = int(n)
             elif i == 8:
-                parsed_obs[i] = Classes.generate_class(Classes.str_to_class_enum(n))
+                parsed_obs[i] = Classes.str_to_class_enum(n)
             else:
                 parsed_obs[i] = float(n)
             i += 1
@@ -125,7 +125,7 @@ for test_dir in test_dirs:
         gt = cv2.imread(gt_path, 0)
         seg = cv2.imread(seg_path, 0)
         obs = []
-        if model == 'odl':
+        if model_name == 'odl':
             obs = read_labels_gt_viewer_multiclass(obs_path)
         else:
             obs = read_labels_gt_viewer(obs_path)
@@ -154,6 +154,7 @@ for test_dir in test_dirs:
         #Get obstacles from GT segmentation and depth
         #gt_obs = EvaluationUtils.get_obstacles_from_seg_and_depth(gt, seg, segm_thr=-1)
         if model == 'odl':
+            obs[:, 2] = Classes.generate_class(obs[:, 2])
             gt_obs = EvaluationUtils.get_obstacles_from_list_multiclass(obs)
         else:
             gt_obs = EvaluationUtils.get_obstacles_from_list(obs)

@@ -587,7 +587,7 @@ def load_model(name, config):
     elif name is 'odl':
         model = ODL(config)
         # model.model.load_weights(config.weights_path)
-        model.model.load_weights("/data/J-MOD2/logs/NAME_OF_EXPERIMENT__160_256_test_dirs_\['more_classes_test_1']_2019-03-19_08-09-37/weights-40-0.38.hdf5")
+        model.model.load_weights("../weights/t.hdf5")
         detector_only = False
 
     elif name is 'cadena':
