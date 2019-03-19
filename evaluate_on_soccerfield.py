@@ -4,6 +4,8 @@ import lib.EvaluationUtils as EvaluationUtils
 from config import get_config
 import os
 from glob import glob
+
+from lib.Classes import Classes
 from lib.Evaluators import JMOD2Stats
 
 # python evaluate_on_soccerfield.py --data_set_dir /data --data_train_dirs 09_D --data_test_dirs 09_D --is_train False --dataset Soccer --is_deploy False --weights_path weights/nt-180-0.02.hdf5 --resume_training True
@@ -73,9 +75,8 @@ def read_labels_gt_viewer_multiclass(obstacles_gt):
         for n in parsed_str_obs:
             if i < 2:
                 parsed_obs[i] = int(n)
-            elif i == 7:
-                if n == 'robot':
-                    parsed_obs[i] =
+            elif i == 8:
+                parsed_obs[i] = Classes.generate_class(Classes.str_to_class_enum(n))
             else:
                 parsed_obs[i] = float(n)
             i += 1
@@ -85,8 +86,9 @@ def read_labels_gt_viewer_multiclass(obstacles_gt):
         w = int(parsed_obs[4]*256)
         h = int(parsed_obs[5]*160)
 
-        object = [[x, y, w, h],
-                  [parsed_obs[6], parsed_obs[7]]
+        object = [[x - w/2, y - h/2, w, h],
+                  [parsed_obs[6], parsed_obs[7]],
+                  parsed_obs[8]
                   ]
         labels.append(object)
 
@@ -122,7 +124,11 @@ for test_dir in test_dirs:
         rgb_raw = cv2.imread(rgb_path)
         gt = cv2.imread(gt_path, 0)
         seg = cv2.imread(seg_path, 0)
-        obs = read_labels_gt_viewer(obs_path)
+        obs = []
+        if model == 'odl':
+            obs = read_labels_gt_viewer_multiclass(obs_path)
+        else:
+            obs = read_labels_gt_viewer(obs_path)
 
         #Normalize input between 0 and 1, resize if required
 
@@ -147,11 +153,18 @@ for test_dir in test_dirs:
 
         #Get obstacles from GT segmentation and depth
         #gt_obs = EvaluationUtils.get_obstacles_from_seg_and_depth(gt, seg, segm_thr=-1)
-        gt_obs = EvaluationUtils.get_obstacles_from_list(obs)
+        if model == 'odl':
+            gt_obs = EvaluationUtils.get_obstacles_from_list_multiclass(obs)
+        else:
+            gt_obs = EvaluationUtils.get_obstacles_from_list(obs)
 
         if showImages:
             if results[1] is not None:
-                EvaluationUtils.show_detections(rgb_raw, results[1], gt_obs, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
+                if model == 'odl':
+                    EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save",
+                                                    file_name="sav_" + str(i) + ".png", sleep_for=10)
+                else:
+                    EvaluationUtils.show_detections(rgb_raw, results[1], gt_obs, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
             if results[0] is not None:
                 EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
 

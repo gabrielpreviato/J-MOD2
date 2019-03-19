@@ -29,7 +29,7 @@ class ODL(DepthFCNModel):
         print self.config.dataset
 
         if self.config.dataset == 'UnrealDataset':
-            dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame,
+            dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame_Multiclass,
                                                                                               get_obstacles=True), read_obstacles=True)
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'UnrealDataset'

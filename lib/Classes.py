@@ -11,7 +11,16 @@ class Classes(object):
         elif class_enum == 1:
             return  Ball()
         elif class_enum == 2:
-            return Goal
+            return Goal()
+
+    @staticmethod
+    def str_to_class_enum(str):
+        if str == 'robot':
+            return 0
+        elif str == 'ball':
+            return 1
+        elif str == 'goal':
+            return 2
 
 
 class Robot(Classes):

@@ -104,7 +104,7 @@ class Obstacle(object):
         return math.sqrt(mean_rmse), math.sqrt(mean_variance), self.valid_points
 
 
-class ObstacleMulticlass(object):
+class ObstacleMulticlass(Obstacle):
     def __init__(self, x, y, w, h, class_obj, depth_seg = None, obs_stats = None):
         super(ObstacleMulticlass, self).__init__( x, y, w, h, depth_seg, obs_stats)
 
@@ -163,7 +163,7 @@ def get_obstacles_from_list_multiclass(list):
                                         obs* = [(x,y,w,h),(mean, var)]"""
     obstacles = []
     for obstacle_def in list:
-        obstacle = ObstacleMulticlass(obstacle_def[0][0],obstacle_def[0][1],obstacle_def[0][2],obstacle_def[0][3], list[2], obs_stats = (obstacle_def[1][0], obstacle_def[1][1]))
+        obstacle = ObstacleMulticlass(obstacle_def[0][0],obstacle_def[0][1],obstacle_def[0][2],obstacle_def[0][3], obstacle_def[2], obs_stats = (obstacle_def[1][0], obstacle_def[1][1]))
         obstacles.append(obstacle)
 
     return obstacles
@@ -301,13 +301,13 @@ def get_detected_obstacles_from_detector_multiclass(prediction, confidence_thr=0
     conf = np.asarray(confidence_list[:, 0], dtype=np.float32)
     # Evaluate prediction only on high confidence detections. If confidence over a certain threshold, confidence = 1
     confidence = np.where(conf > confidence_thr, 1, 0)
-    x_pos = prediction[0, :, 1] * confidence
-    y_pos = prediction[0, :, 2] * confidence
-    ws = prediction[0, :, 3] * confidence
-    hs = prediction[0, :, 4] * confidence
-    depth = prediction[0, :, 5] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
+    x_pos = prediction[0, :, 3] * confidence
+    y_pos = prediction[0, :, 4] * confidence
+    ws = prediction[0, :, 5] * confidence
+    hs = prediction[0, :, 6] * confidence
+    depth = prediction[0, :, 7] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
     variance = prediction[0, :,
-               6] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled down by 1000
+               8] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled down by 1000
 
     IMG_WIDTH = 256
     IMG_HEIGHT = 160
@@ -480,6 +480,56 @@ def show_detections(rgb, detection, gt=None, save = False, save_dir = None, file
     cv2.imshow("Detections(RED:predictions,GREEN: GT", output)
     cv2.waitKey(sleep_for)
 
+def show_detections_multiclass(rgb, detection, gt=None, save = False, save_dir = None, file_name=None, print_depths=False, sleep_for = 50, multiclass=False):
+
+    if len(rgb.shape) == 4:
+        rgb = rgb[0,:,:,:]
+
+    if len(rgb.shape) == 3 and rgb.shape[2] == 1:
+        rgb = rgb[:,:,0]
+
+    if len(rgb.shape) == 2:
+        rgb_new = np.zeros(shape=(rgb.shape[0],rgb.shape[1],3))
+        rgb_new[:,:,0] = rgb
+        rgb_new[:,:,1] = rgb
+        rgb_new[:,:,2] = rgb
+        rgb = rgb_new
+
+    output = rgb.copy()
+    det_obstacles_data = []
+    gt_obstacles_data = []
+
+    for obs in detection:
+        cv2.rectangle(output,(int(obs.x),int(obs.y)),(int(obs.x) + int(obs.w), int(obs.y)+int(obs.h)),(0,0,255),2)
+        det_obstacles_data.append((obs.x, obs.y, obs.w, obs.h, obs.depth_mean, obs.depth_variance))
+
+    if gt is not None:
+        for obs in gt:
+            cv2.rectangle(output, (int(obs.x),int(obs.y)),(int(obs.x) + int(obs.w), int(obs.y)+int(obs.h)), obs.class_obj.color, 2)
+            gt_obstacles_data.append((obs.x, obs.y, obs.w, obs.h, obs.depth_mean, obs.depth_variance))
+    if save:
+        abs_save_dir = os.path.join(os.getcwd(),save_dir)
+        if not os.path.exists(os.path.join(abs_save_dir,'rgb')):
+            os.makedirs(os.path.join(abs_save_dir,'rgb'))
+        if not os.path.exists(os.path.join(abs_save_dir,'detections')):
+            os.makedirs(os.path.join(abs_save_dir, 'detections'))
+
+        cv2.imwrite(os.path.join(abs_save_dir,'rgb',file_name), rgb)
+        cv2.imwrite(os.path.join(abs_save_dir,'detections', file_name), output)
+
+        with open(os.path.join(abs_save_dir,'detections', os.path.splitext(file_name)[0] + '.txt'),'w') as f:
+            f.write('Detected obstacles\n')
+            for x in det_obstacles_data:
+                f.write('x:{},y:{},w:{},h:{},depth:{},var_depth:{}\n'.format(x[0], x[1], x[2], x[3], x[4], x[5]))
+            if gt is not None:
+                f.write('\nGT obstacles\n')
+                for x in gt_obstacles_data:
+                    f.write('x:{},y:{},w:{},h:{},depth:{},var_depth:{}\n'.format(x[0], x[1], x[2], x[3], x[4], x[5]))
+
+    cv2.imshow("Detections(RED:predictions,GREEN: GT", output)
+    cv2.waitKey(sleep_for)
+
+
 def show_depth(rgb, depth, gt=None, save = False, save_dir = None, file_name=None, max = 45.0, sleep_for=50):
 
     if len(rgb.shape) == 4:
@@ -536,7 +586,8 @@ def load_model(name, config):
 
     elif name is 'odl':
         model = ODL(config)
-        model.model.load_weights(config.weights_path)
+        # model.model.load_weights(config.weights_path)
+        model.model.load_weights("/data/J-MOD2/logs/NAME_OF_EXPERIMENT__160_256_test_dirs_\['more_classes_test_1']_2019-03-19_08-09-37/weights-40-0.38.hdf5")
         detector_only = False
 
     elif name is 'cadena':

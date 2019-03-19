@@ -4,6 +4,9 @@ import scipy.io as sio
 from scipy import ndimage
 import random
 
+from lib.Classes import Classes
+
+
 class AbstractSample(object):
 
     def read_features(self):
@@ -112,12 +115,7 @@ class DepthObstacles_SingleFrame_Multiclass(DepthObstacles_SingleFrame):
                 if i < 2:
                     parsed_obs[i] = int(n)
                 elif i == 8:
-                    if n == 'robot':
-                        parsed_obs[i] = 0
-                    elif n == 'goal':
-                        parsed_obs[i] = 1
-                    else: # n == 'ball'
-                        parsed_obs[i] = 2
+                    parsed_obs[i] = Classes.str_to_class_enum(n)
                 else:
                     parsed_obs[i] = float(n)
                 i += 1
