@@ -85,7 +85,7 @@ def read_labels_gt_viewer_multiclass(obstacles_gt):
         w = int(parsed_obs[4]*256)
         h = int(parsed_obs[5]*160)
 
-        object = [[x - w/2, y - h/2, w, h],
+        object = [[x, y, w, h],
                   [parsed_obs[6], parsed_obs[7]]
                   ]
         labels.append(object)

@@ -531,7 +531,7 @@ def load_model(name, config):
 
     if name is 'jmod2':
         model = JMOD2(config)
-        model.model.load_weights("./weights/nt-180-0.02.hdf5")
+        model.model.load_weights("/data/weights/j2-corr/weights-240-0.02.hdf5")
         detector_only = False
 
     elif name is 'odl':

@@ -18,7 +18,7 @@ from lib.DataGenerationStrategy import SingleFrameGenerationStrategy, PairGenera
 
 from keras.optimizers import Adam, Adadelta, SGD
 
-from lib.EvaluationUtils import get_detected_obstacles_from_detector
+from lib.EvaluationUtils import get_detected_obstacles_from_detector_multiclass
 
 import matplotlib.pyplot as plt
 
@@ -207,7 +207,7 @@ class ODL(DepthFCNModel):
         pred_depth = net_output[0] * 19.75
         pred_detection = net_output[1]
 
-        pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector(pred_detection, self.config.detector_confidence_thr)
+        pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector_multiclass(pred_detection, self.config.detector_confidence_thr)
 
         correction_factor = self.compute_correction_factor(pred_depth, pred_obstacles)
 
