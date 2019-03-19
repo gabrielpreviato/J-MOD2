@@ -20,6 +20,7 @@ class FullyConvolutionalModel(AbstractModel):
     def __init__(self, config):
 
         tf_config = tf.ConfigProto()
+        tf_config.gpu_options.allow_growth = True
         tf_config.gpu_options.per_process_gpu_memory_fraction = config.gpu_memory_fraction
         tf_config.gpu_options.visible_device_list = "0"
         set_session(tf.Session(config=tf_config))

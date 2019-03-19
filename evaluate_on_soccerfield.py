@@ -153,15 +153,17 @@ for test_dir in test_dirs:
 
         #Get obstacles from GT segmentation and depth
         #gt_obs = EvaluationUtils.get_obstacles_from_seg_and_depth(gt, seg, segm_thr=-1)
-        if model == 'odl':
-            obs[:, 2] = Classes.generate_class(obs[:, 2])
+        if model_name == 'odl':
+            for ob in obs:
+                ob[2] = Classes.generate_class(ob[2])
+
             gt_obs = EvaluationUtils.get_obstacles_from_list_multiclass(obs)
         else:
             gt_obs = EvaluationUtils.get_obstacles_from_list(obs)
 
         if showImages:
             if results[1] is not None:
-                if model == 'odl':
+                if model_name == 'odl':
                     EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save",
                                                     file_name="sav_" + str(i) + ".png", sleep_for=10)
                 else:

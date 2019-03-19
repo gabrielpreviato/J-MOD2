@@ -298,7 +298,7 @@ def get_detected_obstacles_from_detector_multiclass(prediction, confidence_thr=0
 
         confidence_list.append([class_confidence[best_class], Classes.generate_class(best_class)])
 
-    conf = np.asarray(confidence_list[:, 0], dtype=np.float32)
+    conf = np.asarray([i[0] for i in confidence_list], dtype=np.float32)
     # Evaluate prediction only on high confidence detections. If confidence over a certain threshold, confidence = 1
     confidence = np.where(conf > confidence_thr, 1, 0)
     x_pos = prediction[0, :, 3] * confidence
