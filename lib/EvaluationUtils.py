@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('../')
 
 import numpy as np
@@ -526,10 +527,16 @@ def load_model(name, config):
     from models.DetectorModel import Detector
     from models.EigenModel import EigenModel_Scale3
     from models.CadenaAE import FullMAE
+    from models.ODL import ODL
 
     if name is 'jmod2':
         model = JMOD2(config)
         model.model.load_weights("./weights/nt-180-0.02.hdf5")
+        detector_only = False
+
+    elif name is 'odl':
+        model = ODL(config)
+        model.model.load_weights(config.weights_path)
         detector_only = False
 
     elif name is 'cadena':

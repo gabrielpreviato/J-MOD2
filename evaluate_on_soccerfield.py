@@ -37,7 +37,7 @@ def read_labels_gt_viewer(obstacles_gt):
 
     for obs in obstacles:
         parsed_str_obs = obs.split(" ")
-        parsed_obs = np.zeros(shape=(8))
+        parsed_obs = np.zeros(shape=(7))
         i = 0
         for n in parsed_str_obs:
             if i < 2:
@@ -59,11 +59,45 @@ def read_labels_gt_viewer(obstacles_gt):
 
     return labels
 
+def read_labels_gt_viewer_multiclass(obstacles_gt):
+    with open(obstacles_gt, 'r') as f:
+        obstacles = f.readlines()
+    obstacles = [x.strip() for x in obstacles]
+
+    labels = []
+
+    for obs in obstacles:
+        parsed_str_obs = obs.split(" ")
+        parsed_obs = np.zeros(shape=(8))
+        i = 0
+        for n in parsed_str_obs:
+            if i < 2:
+                parsed_obs[i] = int(n)
+            elif i == 7:
+                if n == 'robot':
+                    parsed_obs[i] =
+            else:
+                parsed_obs[i] = float(n)
+            i += 1
+
+        x = int(parsed_obs[0]*32 + parsed_obs[2]*32)
+        y = int(parsed_obs[1]*32 + parsed_obs[3]*32)
+        w = int(parsed_obs[4]*256)
+        h = int(parsed_obs[5]*160)
+
+        object = [[x - w/2, y - h/2, w, h],
+                  [parsed_obs[6], parsed_obs[7]]
+                  ]
+        labels.append(object)
+
+
+    return labels
+
 #edit config.py as required
 config, unparsed = get_config()
 
 #Edit model_name to choose model between ['jmod2','cadena','detector','depth','eigen']
-model_name = 'jmod2'
+model_name = 'odl'
 
 model, detector_only = EvaluationUtils.load_model(model_name, config)
 
