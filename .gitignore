@@ -34,3 +34,5 @@ venv/*
 *.csv
 *.bag
 env/*
+.venv
+save
