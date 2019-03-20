@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Classes(object):
     def __init__ (self, class_enum):
         self.class_enum = class_enum
@@ -27,18 +30,18 @@ class Robot(Classes):
     def __init__(self):
         super(Robot, self).__init__(0)
 
-        self.color = (255, 0, 0)
+        self.color = np.array((255, 0, 0))
 
 
 class Ball(Classes):
     def __init__(self):
         super(Ball, self).__init__(1)
 
-        self.color = (255, 0, 255)
+        self.color = np.array((255, 0, 255))
 
 
 class Goal(Classes):
     def __init__(self):
         super(Goal, self).__init__(2)
 
-        self.color = (0, 255, 255)
+        self.color = np.array((0, 255, 255))

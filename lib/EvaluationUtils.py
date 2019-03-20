@@ -500,7 +500,9 @@ def show_detections_multiclass(rgb, detection, gt=None, save = False, save_dir =
     gt_obstacles_data = []
 
     for obs in detection:
-        cv2.rectangle(output,(int(obs.x),int(obs.y)),(int(obs.x) + int(obs.w), int(obs.y)+int(obs.h)),(0,0,255),2)
+        cv2.rectangle(output,(int(obs.x),int(obs.y)),(int(obs.x) + int(obs.w), int(obs.y)+int(obs.h)), obs.class_obj.color / 2, 2)
+        # cv2.rectangle(output, (int(obs.x), int(obs.y)), (int(obs.x) + int(obs.w), int(obs.y) + int(obs.h)),
+        #               (0, 0, 255), 2)
         det_obstacles_data.append((obs.x, obs.y, obs.w, obs.h, obs.depth_mean, obs.depth_variance))
 
     if gt is not None:
@@ -587,7 +589,7 @@ def load_model(name, config):
     elif name is 'odl':
         model = ODL(config)
         # model.model.load_weights(config.weights_path)
-        model.model.load_weights("../weights/t.hdf5")
+        model.model.load_weights("/home/previato/LaRoCS/J-MOD2/logs/NAME_OF_EXPERIMENT__160_256_test_dirs_['more_classes_test_1']_2019-03-20_15-11-00/weights-02-1.42.hdf5")
         detector_only = False
 
     elif name is 'cadena':
