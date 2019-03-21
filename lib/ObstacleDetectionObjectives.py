@@ -197,6 +197,17 @@ def yolo_conf_loss(y_true, y_pred, t):
     loss = K.mean(loss1)
     return loss
 
+def yolo_conf_loss_multiclass(y_true, y_pred, t, number_of_classes):
+    real_y_true = tf.where(t, y_true, K.zeros_like(y_true))
+    pobj = K.sigmoid(y_pred)
+    lo = K.square(real_y_true - pobj)
+    value_if_true = 5.0 / number_of_classes * (lo)
+    value_if_false = 0.05 / number_of_classes * (lo)
+    loss1 = tf.where(t, value_if_true, value_if_false)
+
+    loss = K.mean(loss1)
+    return loss
+
 
 def yolo_class_loss(y_true, y_pred, t):
     real_y_true = tf.where(t, y_true, K.zeros_like(y_true))
@@ -309,9 +320,9 @@ def yolo_v1_loss_multiclass(y_true, y_pred):
 
     conf_loss = yolo_conf_loss(truth_class1_tensor, pred_class1_tensor, tens)
 
-    c1_loss = yolo_conf_loss(truth_class1_tensor, pred_class1_tensor, tens_c1)
-    c2_loss = yolo_conf_loss(truth_class2_tensor, pred_class2_tensor, tens_c2)
-    c3_loss = yolo_conf_loss(truth_class3_tensor, pred_class3_tensor, tens_c3)
+    c1_loss = yolo_conf_loss_multiclass(truth_class1_tensor, pred_class1_tensor, tens_c1, 3)
+    c2_loss = yolo_conf_loss_multiclass(truth_class2_tensor, pred_class2_tensor, tens_c2, 3)
+    c3_loss = yolo_conf_loss_multiclass(truth_class3_tensor, pred_class3_tensor, tens_c3, 3)
 
     xy_loss = yoloxyloss(truth_xy_tensor,pred_xy_tensor,tens_2d)
     wh_loss = yolo_wh_loss(truth_wh_tensor,pred_wh_tensor,tens_2d)
