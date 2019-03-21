@@ -35,7 +35,7 @@ data_arg.add_argument('--img_extension', type=str, default="png")
 
 #JMOD2 param
 jmod2_arg = add_argument_group('JMOD2')
-jmod2_arg.add_argument('--detector_confidence_thr', type=int, default=0.65)
+jmod2_arg.add_argument('--detector_confidence_thr', type=float, default=0.65)
 
 #CADENA param
 cad_arg = add_argument_group('Cadena')

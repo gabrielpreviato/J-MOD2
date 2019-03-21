@@ -164,6 +164,7 @@ for test_dir in test_dirs:
         if showImages:
             if results[1] is not None:
                 if model_name == 'odl':
+                    print len(results[1])
                     EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save",
                                                     file_name="sav_" + str(i) + ".png", sleep_for=10)
                 else:
