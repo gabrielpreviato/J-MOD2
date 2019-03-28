@@ -136,6 +136,50 @@ class DepthObstacles_SingleFrame_Multiclass(DepthObstacles_SingleFrame):
         return labels
 
 
+class DepthObstacles_SingleFrame_Multiclass_2(DepthObstacles_SingleFrame):
+
+    def read_labels(self):
+        depth_label = cv2.imread(self.depth_gt[0], cv2.IMREAD_GRAYSCALE)
+
+        #leggi file di testo
+
+        with open(self.obstacles_gt[0],'r') as f:
+            obstacles = f.readlines()
+        obstacles = [x.strip() for x in obstacles]
+
+        obstacles_label = np.zeros(shape=(5,8,8))
+
+        for obs in obstacles:
+            parsed_str_obs = obs.split(" ")
+            parsed_obs = np.zeros(shape=(9))
+            i = 0
+            for n in parsed_str_obs:
+                if i < 2:
+                    parsed_obs[i] = int(n)
+                elif i == 8:
+                    parsed_obs[i] = Classes.str_to_class_enum(n)
+                else:
+                    parsed_obs[i] = float(n)
+                i += 1
+
+            if parsed_obs[8] == 2:
+                continue
+
+            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 0] = 1.0 if parsed_obs[8] == 0 else 0.0 #class 1
+            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 1] = 1.0 if parsed_obs[8] == 1 else 0.0 # class 2
+            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 2] = parsed_obs[2] # x
+            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 3] = parsed_obs[3] # y
+            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 4] = parsed_obs[4] # w
+            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 5] = parsed_obs[5] # h
+            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 6] = parsed_obs[6] * 0.1 # m
+            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 7] = parsed_obs[7] * 0.1 # v
+        labels = {}
+        labels["depth"] = np.expand_dims(depth_label,2)
+        labels["obstacles"] =np.reshape(obstacles_label,(40,8))
+
+        return labels
+
+
 #Samples used by Cadena baseline
 class GenericDenoisingAESample(AbstractSample):
     def __init__(self, data, corrupt_data = True, mean = None):

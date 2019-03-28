@@ -95,6 +95,43 @@ def read_labels_gt_viewer_multiclass(obstacles_gt):
 
     return labels
 
+def read_labels_gt_viewer_multiclass_2(obstacles_gt):
+    with open(obstacles_gt, 'r') as f:
+        obstacles = f.readlines()
+    obstacles = [x.strip() for x in obstacles]
+
+    labels = []
+
+    for obs in obstacles:
+        parsed_str_obs = obs.split(" ")
+        parsed_obs = np.zeros(shape=(9))
+        i = 0
+        for n in parsed_str_obs:
+            if i < 2:
+                parsed_obs[i] = int(n)
+            elif i == 8:
+                parsed_obs[i] = Classes.str_to_class_enum(n)
+            else:
+                parsed_obs[i] = float(n)
+            i += 1
+
+        if parsed_obs[8] == 2:
+            continue
+
+        x = int(parsed_obs[0]*32 + parsed_obs[2]*32)
+        y = int(parsed_obs[1]*32 + parsed_obs[3]*32)
+        w = int(parsed_obs[4]*256)
+        h = int(parsed_obs[5]*160)
+
+        object = [[x - w/2, y - h/2, w, h],
+                  [parsed_obs[6], parsed_obs[7]],
+                  parsed_obs[8]
+                  ]
+        labels.append(object)
+
+
+    return labels
+
 #edit config.py as required
 config, unparsed = get_config()
 
@@ -126,7 +163,7 @@ for test_dir in test_dirs:
         seg = cv2.imread(seg_path, 0)
         obs = []
         if model_name == 'odl':
-            obs = read_labels_gt_viewer_multiclass(obs_path)
+            obs = read_labels_gt_viewer_multiclass_2(obs_path)
         else:
             obs = read_labels_gt_viewer(obs_path)
 

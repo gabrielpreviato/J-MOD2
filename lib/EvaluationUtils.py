@@ -291,7 +291,7 @@ def get_detected_obstacles_from_detector_multiclass(prediction, confidence_thr=0
         prediction = np.expand_dims(prediction, 0)
 
     confidence_list = []
-    for val in prediction[0, :, 0:3]:
+    for val in prediction[0, :, 0:2]:
         class_confidence = vec_sigmoid(val)
 
         best_class = np.argmax(class_confidence)
@@ -301,13 +301,13 @@ def get_detected_obstacles_from_detector_multiclass(prediction, confidence_thr=0
     conf = np.asarray([i[0] for i in confidence_list], dtype=np.float32)
     # Evaluate prediction only on high confidence detections. If confidence over a certain threshold, confidence = 1
     confidence = np.where(conf > confidence_thr, 1, 0)
-    x_pos = prediction[0, :, 3] * confidence
-    y_pos = prediction[0, :, 4] * confidence
-    ws = prediction[0, :, 5] * confidence
-    hs = prediction[0, :, 6] * confidence
-    depth = prediction[0, :, 7] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
+    x_pos = prediction[0, :, 2] * confidence
+    y_pos = prediction[0, :, 3] * confidence
+    ws = prediction[0, :, 4] * confidence
+    hs = prediction[0, :, 5] * confidence
+    depth = prediction[0, :, 6] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
     variance = prediction[0, :,
-               8] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled down by 1000
+               7] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled down by 1000
 
     IMG_WIDTH = 256
     IMG_HEIGHT = 160
@@ -587,7 +587,7 @@ def load_model(name, config):
     elif name is 'odl':
         model = ODL(config)
         # model.model.load_weights(config.weights_path)
-        model.model.load_weights("/data/J-MOD2/logs/multiclass_test_1__160_256_test_dirs_['more_classes_test_1']_2019-03-20_06-38-01/weights-60-0.05.hdf5")
+        model.model.load_weights("/data/J-MOD2/logs/multiclass_2_test_1__160_256_test_dirs_['more_classes_test_1']_2019-03-25_11-31-36/weights-20-0.04.hdf5")
         detector_only = False
 
     elif name is 'cadena':

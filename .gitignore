@@ -36,3 +36,4 @@ venv/*
 env/*
 .venv
 save
+.cpu-tf/

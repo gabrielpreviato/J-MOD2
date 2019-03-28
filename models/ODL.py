@@ -2,10 +2,13 @@ from keras.models import Model
 from keras.layers import  Reshape, Flatten,Convolution2D,  Dropout, Concatenate
 from keras.layers import Dense
 
-from lib.SampleType import DepthObstacles_SingleFrame, DepthObstacles_SingleFrame_Multiclass
+from lib.SampleType import DepthObstacles_SingleFrame, DepthObstacles_SingleFrame_Multiclass, \
+    DepthObstacles_SingleFrame_Multiclass_2
 
 from lib.DepthObjectives import root_mean_squared_logarithmic_loss, root_mean_squared_loss, mean_squared_loss, log_normals_loss,eigen_loss
-from lib.ObstacleDetectionObjectives import yolo_v1_loss_multiclass, iou_metric, recall, precision, mean_metric, variance_metric
+from lib.ObstacleDetectionObjectives import yolo_v1_loss_multiclass, iou_metric, recall, precision, mean_metric, \
+    variance_metric, yolo_v1_loss_multiclass_2, iou_metric_multiclass_2, recall_multiclass_2, precision_multiclass_2, \
+    mean_metric_multiclass_2, variance_metric_multiclass_2
 from lib.DepthMetrics import rmse_metric, logrmse_metric, sc_inv_logrmse_metric
 
 import numpy as np
@@ -29,7 +32,7 @@ class ODL(DepthFCNModel):
         print self.config.dataset
 
         if self.config.dataset == 'UnrealDataset':
-            dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame_Multiclass,
+            dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame_Multiclass_2,
                                                                                               get_obstacles=True), read_obstacles=True)
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'UnrealDataset'
@@ -37,7 +40,7 @@ class ODL(DepthFCNModel):
 
         elif self.config.dataset == 'Soccer':
             print 2
-            dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame_Multiclass,
+            dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame_Multiclass_2,
                                                                                                    get_obstacles=True), read_obstacles=True)
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'Soccer'
@@ -51,7 +54,7 @@ class ODL(DepthFCNModel):
         features /= 255.0
 
         labels_depth = np.zeros(shape=(features.shape[0],features.shape[1],features.shape[2],1), dtype=np.float32)
-        labels_obs = np.zeros(shape=(features.shape[0],40,9), dtype=np.float32)
+        labels_obs = np.zeros(shape=(features.shape[0],40,8), dtype=np.float32)
         i = 0
         for elem in label:
             elem["depth"] = np.asarray(elem["depth"]).astype(np.float32)
@@ -76,22 +79,22 @@ class ODL(DepthFCNModel):
         x = Convolution2D(512, (3, 3), activation='relu', padding='same', name='det_conv4')(x)
         x = Convolution2D(512, (3, 3), activation='relu', padding='same', name='det_conv5')(x)
 
-        x = Convolution2D(360, (3, 3), activation='relu', padding='same', name='det_conv6')(x)
-        x = Reshape((40, 9, 160))(x)
+        x = Convolution2D(320, (3, 3), activation='relu', padding='same', name='det_conv6')(x)
+        x = Reshape((40, 8, 160))(x)
 
         x = Convolution2D(160, (3, 3), activation='relu', padding='same', name='det_conv7')(x)
         x = Convolution2D(40, (3, 3), activation='relu', padding='same', name='det_conv8')(x)
         x = Convolution2D(1, (3, 3), activation='linear', padding='same', name='det_conv9')(x)
 
-        out_detection = Reshape((40, 9), name='detection_output')(x)
+        out_detection = Reshape((40, 8), name='detection_output')(x)
 
 
         model = Model(inputs= depth_model.inputs[0], outputs=[depth_model.outputs[0], out_detection])
 
         opt = Adam(lr=self.config.learning_rate, clipnorm = 1.)
-        model.compile(loss={'depth_output': log_normals_loss, 'detection_output':yolo_v1_loss_multiclass},
+        model.compile(loss={'depth_output': log_normals_loss, 'detection_output':yolo_v1_loss_multiclass_2},
                             optimizer=opt,
-                            metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric], 'detection_output': [iou_metric, recall, precision, mean_metric, variance_metric], 'accuracy': ['accuracy']},
+                            metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric], 'detection_output': [iou_metric_multiclass_2, recall_multiclass_2, precision_multiclass_2, mean_metric_multiclass_2, variance_metric_multiclass_2]},
                             loss_weights=[1.0, 1.0])
         model.summary()
         return model
