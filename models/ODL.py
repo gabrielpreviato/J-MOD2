@@ -9,7 +9,8 @@ from lib.DepthObjectives import root_mean_squared_logarithmic_loss, root_mean_sq
     log_normals_loss, eigen_loss
 from lib.ObstacleDetectionObjectives import yolo_v1_loss_multiclass, iou_metric, recall, precision, mean_metric, \
     variance_metric, yolo_v1_loss_multiclass_2, iou_metric_multiclass_2, recall_multiclass_2, precision_multiclass_2, \
-    mean_metric_multiclass_2, variance_metric_multiclass_2
+    mean_metric_multiclass_2, variance_metric_multiclass_2, yolo_v1_loss_multiclass_3, recall_multiclass_3, \
+    mean_metric_multiclass_3, precision_multiclass_3, iou_metric_multiclass_3, variance_metric_multiclass_3
 from lib.DepthMetrics import rmse_metric, logrmse_metric, sc_inv_logrmse_metric
 
 import numpy as np
@@ -115,13 +116,26 @@ class ODL(DepthFCNModel):
         model = Model(inputs=depth_model.inputs[0], outputs=[depth_model.outputs[0], out_detection])
 
         opt = Adam(lr=self.config.learning_rate, clipnorm=1.)
-        model.compile(loss={'depth_output': log_normals_loss, 'detection_output': yolo_v1_loss_multiclass_2},
-                      optimizer=opt,
-                      metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric],
-                               'detection_output': [iou_metric_multiclass_2, recall_multiclass_2,
-                                                    precision_multiclass_2, mean_metric_multiclass_2,
-                                                    variance_metric_multiclass_2], 'accuracy': ['accuracy']},
-                      loss_weights=[1.0, 1.0])
+
+        if self.number_classes == 2:
+            model.compile(loss={'depth_output': log_normals_loss, 'detection_output': yolo_v1_loss_multiclass_2},
+                          optimizer=opt,
+                          metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric],
+                                   'detection_output': [iou_metric_multiclass_2, recall_multiclass_2,
+                                                        precision_multiclass_2, mean_metric_multiclass_2,
+                                                        variance_metric_multiclass_2], 'accuracy': ['accuracy']},
+                          loss_weights=[1.0, 1.0])
+        elif self.number_classes == 3:
+            model.compile(loss={'depth_output': log_normals_loss, 'detection_output': yolo_v1_loss_multiclass_3},
+                          optimizer=opt,
+                          metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric],
+                                   'detection_output': [iou_metric_multiclass_3, recall_multiclass_3,
+                                                        precision_multiclass_3, mean_metric_multiclass_3,
+                                                        variance_metric_multiclass_3], 'accuracy': ['accuracy']},
+                          loss_weights=[1.0, 1.0])
+        else:
+            raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
+
         model.summary()
         return model
 
