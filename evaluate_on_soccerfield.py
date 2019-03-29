@@ -137,8 +137,9 @@ config, unparsed = get_config()
 
 #Edit model_name to choose model between ['jmod2','cadena','detector','depth','eigen']
 model_name = 'odl'
+number_classes = 2
 
-model, detector_only = EvaluationUtils.load_model(model_name, config)
+model, detector_only = EvaluationUtils.load_model(model_name, config, number_classes)
 
 showImages = True
 
