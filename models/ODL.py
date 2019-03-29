@@ -1,11 +1,12 @@
 from keras.models import Model
-from keras.layers import  Reshape, Flatten,Convolution2D,  Dropout, Concatenate
+from keras.layers import Reshape, Flatten, Convolution2D, Dropout, Concatenate
 from keras.layers import Dense
 
-from lib.SampleType import DepthObstacles_SingleFrame, DepthObstacles_SingleFrame_Multiclass, \
-    DepthObstacles_SingleFrame_Multiclass_2
+from lib.SampleType import DepthObstacles_SingleFrame, DepthObstacles_SingleFrame_Multiclass_2, \
+    DepthObstacles_SingleFrame_Multiclass_3
 
-from lib.DepthObjectives import root_mean_squared_logarithmic_loss, root_mean_squared_loss, mean_squared_loss, log_normals_loss,eigen_loss
+from lib.DepthObjectives import root_mean_squared_logarithmic_loss, root_mean_squared_loss, mean_squared_loss, \
+    log_normals_loss, eigen_loss
 from lib.ObstacleDetectionObjectives import yolo_v1_loss_multiclass, iou_metric, recall, precision, mean_metric, \
     variance_metric, yolo_v1_loss_multiclass_2, iou_metric_multiclass_2, recall_multiclass_2, precision_multiclass_2, \
     mean_metric_multiclass_2, variance_metric_multiclass_2
@@ -25,27 +26,33 @@ from lib.EvaluationUtils import get_detected_obstacles_from_detector_multiclass
 
 import matplotlib.pyplot as plt
 
+
 class ODL(DepthFCNModel):
+    def __init__(self, number_classes, config):
+        self.number_classes = number_classes
+
+        super(ODL, self).__init__(config)
 
     def load_dataset(self):
-        print 1
         print self.config.dataset
 
-        if self.config.dataset == 'UnrealDataset':
-            dataset = UnrealDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame_Multiclass_2,
-                                                                                              get_obstacles=True), read_obstacles=True)
-            dataset.data_generation_strategy.mean = dataset.mean
-            dataset_name = 'UnrealDataset'
-            return dataset, dataset_name
+        if self.config.dataset == 'Soccer':
+            if self.number_classes == 2:
+                dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(
+                    sample_type=DepthObstacles_SingleFrame_Multiclass_2,
+                    get_obstacles=True), read_obstacles=True)
+            elif self.number_classes == 3:
+                dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(
+                    sample_type=DepthObstacles_SingleFrame_Multiclass_3,
+                    get_obstacles=True), read_obstacles=True)
+            else:
+                raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
 
-        elif self.config.dataset == 'Soccer':
-            print 2
-            dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(sample_type=DepthObstacles_SingleFrame_Multiclass_2,
-                                                                                                   get_obstacles=True), read_obstacles=True)
             dataset.data_generation_strategy.mean = dataset.mean
             dataset_name = 'Soccer'
             return dataset, dataset_name
-
+        else:
+            raise Exception("ODL not implemented with this type of dataset")
 
     def prepare_data_for_model(self, features, label):
         features = np.asarray(features)
@@ -53,24 +60,30 @@ class ODL(DepthFCNModel):
 
         features /= 255.0
 
-        labels_depth = np.zeros(shape=(features.shape[0],features.shape[1],features.shape[2],1), dtype=np.float32)
-        labels_obs = np.zeros(shape=(features.shape[0],40,8), dtype=np.float32)
+        labels_depth = np.zeros(shape=(features.shape[0], features.shape[1], features.shape[2], 1), dtype=np.float32)
+        if self.number_classes == 2:
+            labels_obs = np.zeros(shape=(features.shape[0], 40, 8), dtype=np.float32)
+        elif self.number_classes == 3:
+            labels_obs = np.zeros(shape=(features.shape[0], 40, 9), dtype=np.float32)
+        else:
+            raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
         i = 0
         for elem in label:
             elem["depth"] = np.asarray(elem["depth"]).astype(np.float32)
 
-            elem["depth"] = -4.586e-09 * (elem["depth"] ** 4) + 3.382e-06 * (elem["depth"] ** 3) - 0.000105 * (elem["depth"] ** 2) + 0.04239 * elem["depth"] + 0.04072
+            elem["depth"] = -4.586e-09 * (elem["depth"] ** 4) + 3.382e-06 * (elem["depth"] ** 3) - 0.000105 * (
+                    elem["depth"] ** 2) + 0.04239 * elem["depth"] + 0.04072
             elem["depth"] /= 19.75
 
-            labels_depth[i,:,:,:] = elem["depth"]
-            labels_obs[i,:,:] = np.asarray(elem["obstacles"]).astype(np.float32)
-            i +=1
+            labels_depth[i, :, :, :] = elem["depth"]
+            labels_obs[i, :, :] = np.asarray(elem["obstacles"]).astype(np.float32)
+            i += 1
 
-        return features, [labels_depth,labels_obs]
+        return features, [labels_depth, labels_obs]
 
     def build_model(self):
         depth_model = self.define_architecture()
-        #Detection section
+        # Detection section
         output = depth_model.layers[-10].output
 
         x = Convolution2D(512, (3, 3), activation='relu', padding='same', name='det_conv1')(output)
@@ -79,23 +92,36 @@ class ODL(DepthFCNModel):
         x = Convolution2D(512, (3, 3), activation='relu', padding='same', name='det_conv4')(x)
         x = Convolution2D(512, (3, 3), activation='relu', padding='same', name='det_conv5')(x)
 
-        x = Convolution2D(320, (3, 3), activation='relu', padding='same', name='det_conv6')(x)
-        x = Reshape((40, 8, 160))(x)
+        if self.number_classes == 2:
+            x = Convolution2D(320, (3, 3), activation='relu', padding='same', name='det_conv6')(x)
+            x = Reshape((40, 8, 160))(x)
+        elif self.number_classes == 3:
+            x = Convolution2D(360, (3, 3), activation='relu', padding='same', name='det_conv6')(x)
+            x = Reshape((40, 9, 160))(x)
+        else:
+            raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
 
         x = Convolution2D(160, (3, 3), activation='relu', padding='same', name='det_conv7')(x)
         x = Convolution2D(40, (3, 3), activation='relu', padding='same', name='det_conv8')(x)
         x = Convolution2D(1, (3, 3), activation='linear', padding='same', name='det_conv9')(x)
 
-        out_detection = Reshape((40, 8), name='detection_output')(x)
+        if self.number_classes == 2:
+            out_detection = Reshape((40, 8), name='detection_output')(x)
+        elif self.number_classes == 3:
+            out_detection = Reshape((40, 9), name='detection_output')(x)
+        else:
+            raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
 
+        model = Model(inputs=depth_model.inputs[0], outputs=[depth_model.outputs[0], out_detection])
 
-        model = Model(inputs= depth_model.inputs[0], outputs=[depth_model.outputs[0], out_detection])
-
-        opt = Adam(lr=self.config.learning_rate, clipnorm = 1.)
-        model.compile(loss={'depth_output': log_normals_loss, 'detection_output':yolo_v1_loss_multiclass_2},
-                            optimizer=opt,
-                            metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric], 'detection_output': [iou_metric_multiclass_2, recall_multiclass_2, precision_multiclass_2, mean_metric_multiclass_2, variance_metric_multiclass_2]},
-                            loss_weights=[1.0, 1.0])
+        opt = Adam(lr=self.config.learning_rate, clipnorm=1.)
+        model.compile(loss={'depth_output': log_normals_loss, 'detection_output': yolo_v1_loss_multiclass_2},
+                      optimizer=opt,
+                      metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric],
+                               'detection_output': [iou_metric_multiclass_2, recall_multiclass_2,
+                                                    precision_multiclass_2, mean_metric_multiclass_2,
+                                                    variance_metric_multiclass_2], 'accuracy': ['accuracy']},
+                      loss_weights=[1.0, 1.0])
         model.summary()
         return model
 
@@ -182,41 +208,41 @@ class ODL(DepthFCNModel):
 
         plt.close()
 
-
     def run(self, input):
-        #import time
+        # import time
 
         mean = np.load('Unreal_RGB_mean.npy')
 
         if len(input.shape) == 2 or input.shape[2] == 1:
-            tmp = np.zeros(shape=(input.shape[0],input.shape[1],3))
-            tmp[:,:,0] = input
-            tmp[:,:,1] = input
-            tmp[:,:,2] = input
+            tmp = np.zeros(shape=(input.shape[0], input.shape[1], 3))
+            tmp[:, :, 0] = input
+            tmp[:, :, 1] = input
+            tmp[:, :, 2] = input
 
             input = tmp
 
         if len(input.shape) == 3:
-            input = np.expand_dims(input-mean/255., 0)
+            input = np.expand_dims(input - mean / 255., 0)
         else:
-            input[0,:,:,:] -= mean/255.
+            input[0, :, :, :] -= mean / 255.
 
-        #t0 = time.time()
+        # t0 = time.time()
 
         net_output = self.model.predict(input)
 
-        #print ("Elapsed time: {}").format(time.time() - t0)
+        # print ("Elapsed time: {}").format(time.time() - t0)
 
         pred_depth = net_output[0] * 19.75
         pred_detection = net_output[1]
 
-        pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector_multiclass(pred_detection, self.config.detector_confidence_thr)
+        pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector_multiclass(pred_detection,
+                                                                                             self.config.detector_confidence_thr)
 
         correction_factor = self.compute_correction_factor(pred_depth, pred_obstacles)
 
         corrected_depth = np.array(pred_depth) * correction_factor
 
-        return [pred_depth,pred_obstacles,corrected_depth]
+        return [pred_depth, pred_obstacles, corrected_depth]
 
     def compute_correction_factor(self, depth, obstacles):
 
