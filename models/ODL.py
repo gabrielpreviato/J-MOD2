@@ -1,13 +1,16 @@
 from keras.models import Model
 from keras.layers import Reshape, Convolution2D
 
-from lib.SampleType import DepthObstacles_SingleFrame_Multiclass_2, DepthObstacles_SingleFrame_Multiclass_3
+from lib.SampleType import DepthObstacles_SingleFrame_Multiclass_2, DepthObstacles_SingleFrame_Multiclass_3, \
+    DepthObstacles_SingleFrame_Multiclass_4
 
 from lib.DepthObjectives import log_normals_loss
 from lib.ObstacleDetectionObjectives import yolo_v1_loss_multiclass_2, iou_metric_multiclass_2, recall_multiclass_2, \
     precision_multiclass_2, \
     mean_metric_multiclass_2, variance_metric_multiclass_2, yolo_v1_loss_multiclass_3, recall_multiclass_3, \
-    mean_metric_multiclass_3, precision_multiclass_3, iou_metric_multiclass_3, variance_metric_multiclass_3
+    mean_metric_multiclass_3, precision_multiclass_3, iou_metric_multiclass_3, variance_metric_multiclass_3, \
+    yolo_v1_loss_multiclass_4, recall_multiclass_4, iou_metric_multiclass_4, precision_multiclass_4, \
+    variance_metric_multiclass_4, mean_metric_multiclass_4
 from lib.DepthMetrics import rmse_metric, logrmse_metric, sc_inv_logrmse_metric
 
 import numpy as np
@@ -20,7 +23,7 @@ from lib.DataGenerationStrategy import SingleFrameGenerationStrategy
 from keras.optimizers import Adam
 
 from lib.EvaluationUtils import get_detected_obstacles_from_detector_multiclass_2, \
-    get_detected_obstacles_from_detector_multiclass_3
+    get_detected_obstacles_from_detector_multiclass_3, get_detected_obstacles_from_detector_multiclass_4
 
 import matplotlib.pyplot as plt
 
@@ -43,6 +46,10 @@ class ODL(DepthFCNModel):
                 dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(
                     sample_type=DepthObstacles_SingleFrame_Multiclass_3,
                     get_obstacles=True), read_obstacles=True)
+            elif self.number_classes == 4:
+                dataset = SoccerFieldDatasetDepthSupervised(self.config, SingleFrameGenerationStrategy(
+                    sample_type=DepthObstacles_SingleFrame_Multiclass_4,
+                    get_obstacles=True), read_obstacles=True)
             else:
                 raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
 
@@ -63,6 +70,8 @@ class ODL(DepthFCNModel):
             labels_obs = np.zeros(shape=(features.shape[0], 40, 8), dtype=np.float32)
         elif self.number_classes == 3:
             labels_obs = np.zeros(shape=(features.shape[0], 40, 9), dtype=np.float32)
+        elif self.number_classes == 4:
+            labels_obs = np.zeros(shape=(features.shape[0], 40, 10), dtype=np.float32)
         else:
             raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
         i = 0
@@ -96,6 +105,9 @@ class ODL(DepthFCNModel):
         elif self.number_classes == 3:
             x = Convolution2D(360, (3, 3), activation='relu', padding='same', name='det_conv6')(x)
             x = Reshape((40, 9, 160))(x)
+        elif self.number_classes == 4:
+            x = Convolution2D(400, (3, 3), activation='relu', padding='same', name='det_conv6')(x)
+            x = Reshape((40, 10, 160))(x)
         else:
             raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
 
@@ -107,6 +119,8 @@ class ODL(DepthFCNModel):
             out_detection = Reshape((40, 8), name='detection_output')(x)
         elif self.number_classes == 3:
             out_detection = Reshape((40, 9), name='detection_output')(x)
+        elif self.number_classes == 4:
+            out_detection = Reshape((40, 10), name='detection_output')(x)
         else:
             raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
 
@@ -129,6 +143,14 @@ class ODL(DepthFCNModel):
                                    'detection_output': [iou_metric_multiclass_3, recall_multiclass_3,
                                                         precision_multiclass_3, mean_metric_multiclass_3,
                                                         variance_metric_multiclass_3], 'accuracy': ['accuracy']},
+                          loss_weights=[1.0, 1.0])
+        elif self.number_classes == 4:
+            model.compile(loss={'depth_output': log_normals_loss, 'detection_output': yolo_v1_loss_multiclass_4},
+                          optimizer=opt,
+                          metrics={'depth_output': [rmse_metric, logrmse_metric, sc_inv_logrmse_metric],
+                                   'detection_output': [iou_metric_multiclass_4, recall_multiclass_4,
+                                                        precision_multiclass_4, mean_metric_multiclass_4,
+                                                        variance_metric_multiclass_4], 'accuracy': ['accuracy']},
                           loss_weights=[1.0, 1.0])
         else:
             raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
@@ -250,6 +272,9 @@ class ODL(DepthFCNModel):
                                                                                                    self.config.detector_confidence_thr)
         elif self.number_classes == 3:
             pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector_multiclass_3(pred_detection,
+                                                                                                   self.config.detector_confidence_thr)
+        elif self.number_classes == 4:
+            pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector_multiclass_4(pred_detection,
                                                                                                    self.config.detector_confidence_thr)
         else:
             raise Exception("ODL not implemented with number of classes " + str(self.number_classes))

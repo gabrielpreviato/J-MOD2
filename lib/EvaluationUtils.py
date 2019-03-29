@@ -392,6 +392,56 @@ def get_detected_obstacles_from_detector_multiclass_3(prediction, confidence_thr
 
     return obstacles, output_img
 
+
+def get_detected_obstacles_from_detector_multiclass_4(prediction, confidence_thr=0.65, output_img=None):
+    def vec_sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    if len(prediction.shape) == 2:
+        prediction = np.expand_dims(prediction, 0)
+
+    confidence_list = []
+    for val in prediction[0, :, 0:4]:
+        class_confidence = vec_sigmoid(val)
+
+        best_class = np.argmax(class_confidence)
+
+        confidence_list.append([class_confidence[best_class], Classes.generate_class(best_class)])
+
+    conf = np.asarray([i[0] for i in confidence_list], dtype=np.float32)
+    # Evaluate prediction only on high confidence detections. If confidence over a certain threshold, confidence = 1
+    confidence = np.where(conf > confidence_thr, 1, 0)
+    x_pos = prediction[0, :, 4] * confidence
+    y_pos = prediction[0, :, 5] * confidence
+    ws = prediction[0, :, 6] * confidence
+    hs = prediction[0, :, 7] * confidence
+    depth = prediction[0, :, 8] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
+    variance = prediction[0, :, 9] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled
+    # down by 1000
+
+    img_width = 256
+    img_height = 160
+
+    detected_obstacles = []
+
+    for i in range(0, prediction.shape[1]):
+        if confidence[i] > 0:
+            # 32 e 8 sono numeri hardcoded rappresentat
+            x_top_left = int(np.floor(np.floor((int(i % 8) + x_pos[i]) * 32) - (ws[i] * img_width / 2)))
+            y_top_left = int(np.floor(((np.floor(i / 8) + y_pos[i]) * 32) - (hs[i] * img_height / 2)))
+            w = ws[i] * img_width
+            h = hs[i] * img_height
+
+            if output_img is not None:
+                cv2.rectangle(output_img, (x_top_left, y_top_left), (x_top_left + int(w), y_top_left + int(h)),
+                              confidence_list[i][1].color, 2)
+
+            detected_obstacles.append([(x_top_left, y_top_left, w, h), (depth[i], variance[i]), confidence_list[i][1]])
+    obstacles = get_obstacles_from_list_multiclass(detected_obstacles)
+
+    return obstacles, output_img
+
+
 def compute_detection_stats(detected_obstacles, gt_obstacles, iou_thresh=0.25):
     # convert in Obstacle object the input list, created by get_detected_obstacles_from_detector
 

@@ -1,7 +1,8 @@
 import numpy as np
 
+
 class Classes(object):
-    def __init__ (self, class_enum):
+    def __init__(self, class_enum):
         self.class_enum = class_enum
 
         self.color = np.array((0, 0, 255))
@@ -11,18 +12,30 @@ class Classes(object):
         if class_enum == 0:
             return Robot()
         elif class_enum == 1:
-            return  Ball()
+            return Ball()
         elif class_enum == 2:
             return Goal()
+        elif class_enum == 3:
+            return RobotTeam()
+        elif class_enum == 4:
+            return RobotOpponent()
+        else:
+            raise Exception("Can't find Class with enum: " + str(class_enum))
 
     @staticmethod
-    def str_to_class_enum(str):
-        if str == 'robot':
+    def str_to_class_enum(string):
+        if string == 'robot':
             return 0
-        elif str == 'ball':
+        elif string == 'ball':
             return 1
-        elif str == 'goal':
+        elif string == 'goal':
             return 2
+        elif string == 'robot_team':
+            return 3
+        elif string == 'robot_opponent':
+            return 4
+        else:
+            raise Exception("Can't find Class: " + string)
 
 
 class Robot(Classes):
@@ -30,6 +43,20 @@ class Robot(Classes):
         super(Robot, self).__init__(0)
 
         self.color = np.array((255, 0, 0))
+
+
+class RobotTeam(Classes):
+    def __init__(self):
+        super(RobotTeam, self).__init__(0)
+
+        self.color = np.array((0, 255, 0))
+
+
+class RobotOpponent(Classes):
+    def __init__(self):
+        super(RobotOpponent, self).__init__(0)
+
+        self.color = np.array((255, 255, 0))
 
 
 class Ball(Classes):

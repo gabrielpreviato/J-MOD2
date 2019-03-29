@@ -72,6 +72,33 @@ def recall(y_true, y_pred):
     return recall
 
 
+def recall_multiclass_4(y_true, y_pred):
+    truth_conf_tensor = K.expand_dims(y_true[:, :, 0:4], 2)  # tf.slice(y_true, [0, 0, 0], [-1,-1, 0])
+    truth_xy_tensor = y_true[:, :, 4:6]  # tf.slice(y_true, [0, 0, 1], [-1,-1, 2])
+    truth_wh_tensor = y_true[:, :, 6:8]  # tf.slice(y_true, [0, 0, 3], [-1, -1, 4])
+
+    pred_conf_tensor = K.expand_dims(y_pred[:, :, 0:4], 2)  # tf.slice(y_pred, [0, 0, 0], [-1, -1, 0])
+    # pred_conf_tensor = K.tanh(pred_conf_tensor)
+    pred_xy_tensor = y_pred[:, :, 4:6]  # tf.slice(y_pred, [0, 0, 1], [-1, -1, 2])
+    pred_wh_tensor = y_pred[:, :, 6:8]  # tf.slice(y_pred, [0, 0, 3], [-1, -1, 4])
+
+    tens = K.greater(truth_conf_tensor, 0.5)
+    tens = tf.reduce_any(tens, axis=-1)
+
+    pred_conf_tensor = tf.reduce_max(pred_conf_tensor, axis=-1)
+
+    ave_iou, recall, precision, obj_count, intersection, union, ow, oh, x, y, w, h = iou(truth_xy_tensor[:, :, 0],
+                                                                                         truth_xy_tensor[:, :, 1],
+                                                                                         truth_wh_tensor[:, :, 0],
+                                                                                         truth_wh_tensor[:, :, 1],
+                                                                                         pred_xy_tensor[:, :, 0],
+                                                                                         pred_xy_tensor[:, :, 1],
+                                                                                         pred_wh_tensor[:, :, 0],
+                                                                                         pred_wh_tensor[:, :, 1],
+                                                                                         tens, pred_conf_tensor)
+    return recall
+
+
 def recall_multiclass_3(y_true, y_pred):
     truth_conf_tensor = K.expand_dims(y_true[:, :, 0:3], 2)  # tf.slice(y_true, [0, 0, 0], [-1,-1, 0])
     truth_xy_tensor = y_true[:, :, 3:5]  # tf.slice(y_true, [0, 0, 1], [-1,-1, 2])
@@ -137,6 +164,33 @@ def precision(y_true, y_pred):
     pred_wh_tensor = y_pred[:, :, 3:5]  # tf.slice(y_pred, [0, 0, 3], [-1, -1, 4])
 
     tens = K.greater(truth_conf_tensor, 0.5)
+
+    ave_iou, recall, precision, obj_count, intersection, union, ow, oh, x, y, w, h = iou(truth_xy_tensor[:, :, 0],
+                                                                                         truth_xy_tensor[:, :, 1],
+                                                                                         truth_wh_tensor[:, :, 0],
+                                                                                         truth_wh_tensor[:, :, 1],
+                                                                                         pred_xy_tensor[:, :, 0],
+                                                                                         pred_xy_tensor[:, :, 1],
+                                                                                         pred_wh_tensor[:, :, 0],
+                                                                                         pred_wh_tensor[:, :, 1],
+                                                                                         tens, pred_conf_tensor)
+    return precision
+
+
+def precision_multiclass_4(y_true, y_pred):
+    truth_conf_tensor = K.expand_dims(y_true[:, :, 0:4], 2)  # tf.slice(y_true, [0, 0, 0], [-1,-1, 0])
+    truth_xy_tensor = y_true[:, :, 4:6]  # tf.slice(y_true, [0, 0, 1], [-1,-1, 2])
+    truth_wh_tensor = y_true[:, :, 6:8]  # tf.slice(y_true, [0, 0, 3], [-1, -1, 4])
+
+    pred_conf_tensor = K.expand_dims(y_pred[:, :, 0:4], 2)  # tf.slice(y_pred, [0, 0, 0], [-1, -1, 0])
+    # pred_conf_tensor = K.tanh(pred_conf_tensor)
+    pred_xy_tensor = y_pred[:, :, 4:6]  # tf.slice(y_pred, [0, 0, 1], [-1, -1, 2])
+    pred_wh_tensor = y_pred[:, :, 6:8]  # tf.slice(y_pred, [0, 0, 3], [-1, -1, 4])
+
+    tens = K.greater(truth_conf_tensor, 0.5)
+    tens = tf.reduce_any(tens, axis=-1)
+
+    pred_conf_tensor = tf.reduce_max(pred_conf_tensor, axis=-1)
 
     ave_iou, recall, precision, obj_count, intersection, union, ow, oh, x, y, w, h = iou(truth_xy_tensor[:, :, 0],
                                                                                          truth_xy_tensor[:, :, 1],
@@ -228,6 +282,33 @@ def iou_metric(y_true, y_pred):
     return ave_iou
 
 
+def iou_metric_multiclass_4(y_true, y_pred):
+    truth_conf_tensor = K.expand_dims(y_true[:, :, 0:4], 2)  # tf.slice(y_true, [0, 0, 0], [-1,-1, 0])
+    truth_xy_tensor = y_true[:, :, 4:6]  # tf.slice(y_true, [0, 0, 1], [-1,-1, 2])
+    truth_wh_tensor = y_true[:, :, 6:8]  # tf.slice(y_true, [0, 0, 3], [-1, -1, 4])
+
+    pred_conf_tensor = K.expand_dims(y_pred[:, :, 0:4], 2)  # tf.slice(y_pred, [0, 0, 0], [-1, -1, 0])
+    # pred_conf_tensor = K.tanh(pred_conf_tensor)
+    pred_xy_tensor = y_pred[:, :, 4:6]  # tf.slice(y_pred, [0, 0, 1], [-1, -1, 2])
+    pred_wh_tensor = y_pred[:, :, 6:8]  # tf.slice(y_pred, [0, 0, 3], [-1, -1, 4])
+
+    tens = K.greater(truth_conf_tensor, 0.5)
+    tens = tf.reduce_any(tens, axis=-1)
+
+    pred_conf_tensor = tf.reduce_max(pred_conf_tensor, axis=-1)
+
+    ave_iou, recall, precision, obj_count, intersection, union, ow, oh, x, y, w, h = iou(truth_xy_tensor[:, :, 0],
+                                                                                         truth_xy_tensor[:, :, 1],
+                                                                                         truth_wh_tensor[:, :, 0],
+                                                                                         truth_wh_tensor[:, :, 1],
+                                                                                         pred_xy_tensor[:, :, 0],
+                                                                                         pred_xy_tensor[:, :, 1],
+                                                                                         pred_wh_tensor[:, :, 0],
+                                                                                         pred_wh_tensor[:, :, 1],
+                                                                                         tens, pred_conf_tensor)
+    return ave_iou
+
+
 def iou_metric_multiclass_3(y_true, y_pred):
     truth_conf_tensor = K.expand_dims(y_true[:, :, 0:3], 2)  # tf.slice(y_true, [0, 0, 0], [-1,-1, 0])
     truth_xy_tensor = y_true[:, :, 3:5]  # tf.slice(y_true, [0, 0, 1], [-1,-1, 2])
@@ -292,6 +373,20 @@ def mean_metric(y_true, y_pred):
 def variance_metric(y_true, y_pred):
     truth_v_tensor = K.expand_dims(y_true[:, :, 6], 2)
     pred_v_tensor = K.expand_dims(y_pred[:, :, 6], 2)
+
+    return rmse_metric(truth_v_tensor, pred_v_tensor)
+
+
+def mean_metric_multiclass_4(y_true, y_pred):
+    truth_m_tensor = K.expand_dims(y_true[:, :, 8], 2)
+    pred_m_tensor = K.expand_dims(y_pred[:, :, 8], 2)
+
+    return rmse_metric(truth_m_tensor, pred_m_tensor)
+
+
+def variance_metric_multiclass_4(y_true, y_pred):
+    truth_v_tensor = K.expand_dims(y_true[:, :, 9], 2)
+    pred_v_tensor = K.expand_dims(y_pred[:, :, 9], 2)
 
     return rmse_metric(truth_v_tensor, pred_v_tensor)
 
@@ -480,6 +575,64 @@ def yolo_v1_loss(y_true, y_pred):
     v_loss = yolo_regressor_loss(truth_v_tensor, pred_v_tensor, tens)
 
     loss = 2.0 * conf_loss + 0.25 * xy_loss + 0.25 * wh_loss + 1.5 * m_loss + 1.25 * v_loss  # loss v1
+    # loss = 2.0 * conf_loss + 0.1 * xy_loss + 1.0 * wh_loss + 5.0 * m_loss + 2.5 * v_loss  # loss v2
+
+    return loss
+
+
+def yolo_v1_loss_multiclass_4(y_true, y_pred):
+    # Y_PRED is Batchx40x10 tensor. y_true is a 40x10 tensor
+
+    truth_class1_tensor = K.expand_dims(y_true[:, :, 0], 2)  # tf.slice(y_true, [0, 0, 0], [-1,-1, 0])
+    truth_class2_tensor = K.expand_dims(y_true[:, :, 1], 2)
+    truth_class3_tensor = K.expand_dims(y_true[:, :, 2], 2)
+    truth_class4_tensor = K.expand_dims(y_true[:, :, 3], 2)
+
+    truth_xy_tensor = y_true[:, :, 4:6]  # tf.slice(y_true, [0, 0, 1], [-1,-1, 2])
+    truth_wh_tensor = y_true[:, :, 6:8]  # tf.slice(y_true, [0, 0, 3], [-1, -1, 4])
+    truth_m_tensor = K.expand_dims(y_true[:, :, 8], 2)  # tf.slice(y_true, [0, 0, 5], [-1, -1, 5])
+    truth_v_tensor = K.expand_dims(y_true[:, :, 9], 2)  # tf.slice(y_true, [0, 0, 6], [-1, -1, 6])
+
+    pred_class1_tensor = K.expand_dims(y_pred[:, :, 0], 2)  # tf.slice(y_pred, [0, 0, 0], [-1, -1, 0])
+    pred_class2_tensor = K.expand_dims(y_pred[:, :, 1], 2)
+    pred_class3_tensor = K.expand_dims(y_pred[:, :, 2], 2)
+    pred_class4_tensor = K.expand_dims(y_pred[:, :, 3], 2)
+
+    # pred_conf_tensor = K.tanh(pred_conf_tensor)
+    pred_xy_tensor = y_pred[:, :, 4:6]  # tf.slice(y_pred, [0, 0, 1], [-1, -1, 2])
+    pred_wh_tensor = y_pred[:, :, 6:8]  # tf.slice(y_pred, [0, 0, 3], [-1, -1, 4])
+    pred_m_tensor = K.expand_dims(y_pred[:, :, 8], 2)  # tf.slice(y_pred, [0, 0, 5], [-1, -1, 5])
+    pred_v_tensor = K.expand_dims(y_pred[:, :, 9], 2)  # tf.slice(y_pred, [0, 0, 6], [-1, -1, 6])
+
+    truth_xy_tensor = tf.Print(truth_xy_tensor, [truth_xy_tensor[:, 14:20, 0]], message='truth_xy', summarize=30)
+    pred_xy_tensor = tf.Print(pred_xy_tensor, [pred_xy_tensor[:, 14:20, 0]], message='pred_xy', summarize=30)
+
+    tens_c1 = K.greater(K.sigmoid(truth_class1_tensor), 0.5)
+    tens_c2 = K.greater(K.sigmoid(truth_class2_tensor), 0.5)
+    tens_c3 = K.greater(K.sigmoid(truth_class3_tensor), 0.5)
+    tens_c4 = K.greater(K.sigmoid(truth_class4_tensor), 0.5)
+
+    # tens = tens_c1 || tens_c2 || tens_c3
+    tens = tf.math.logical_or(tens_c1, tens_c2)
+    tens = tf.math.logical_or(tens, tens_c3)
+    tens = tf.math.logical_or(tens, tens_c4)
+
+    tens_2d = K.concatenate([tens, tens], axis=-1)
+
+    c1_loss = yolo_conf_loss_multiclass(truth_class1_tensor, pred_class1_tensor, tens_c1, 4)
+    c2_loss = yolo_conf_loss_multiclass(truth_class2_tensor, pred_class2_tensor, tens_c2, 4)
+    c3_loss = yolo_conf_loss_multiclass(truth_class3_tensor, pred_class3_tensor, tens_c3, 4)
+    c4_loss = yolo_conf_loss_multiclass(truth_class4_tensor, pred_class4_tensor, tens_c4, 4)
+
+    xy_loss = yoloxyloss(truth_xy_tensor, pred_xy_tensor, tens_2d)
+    wh_loss = yolo_wh_loss(truth_wh_tensor, pred_wh_tensor, tens_2d)
+    m_loss = yolo_regressor_loss(truth_m_tensor, pred_m_tensor, tens)
+    v_loss = yolo_regressor_loss(truth_v_tensor, pred_v_tensor, tens)
+
+    # TODO: Check if 2 * cX_loss is a good value
+    loss = 2.0 * c1_loss + 2.0 * c2_loss + 2.0 * c3_loss + 2.0 * c4_loss + 0.25 * xy_loss + 0.25 * wh_loss + \
+        1.5 * m_loss + 1.25 * v_loss  # loss v1
+    # loss = 2.0 * conf_loss + 0.25 * xy_loss + 0.25 * wh_loss + 1.5 * m_loss + 1.25 * v_loss # loss v1
     # loss = 2.0 * conf_loss + 0.1 * xy_loss + 1.0 * wh_loss + 5.0 * m_loss + 2.5 * v_loss  # loss v2
 
     return loss
