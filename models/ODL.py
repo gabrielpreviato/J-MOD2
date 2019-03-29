@@ -208,27 +208,26 @@ class ODL(DepthFCNModel):
 
         plt.close()
 
-    def run(self, input):
+    def run(self, input_img):
         # import time
-
         mean = np.load('Unreal_RGB_mean.npy')
 
-        if len(input.shape) == 2 or input.shape[2] == 1:
-            tmp = np.zeros(shape=(input.shape[0], input.shape[1], 3))
-            tmp[:, :, 0] = input
-            tmp[:, :, 1] = input
-            tmp[:, :, 2] = input
+        if len(input_img.shape) == 2 or input_img.shape[2] == 1:
+            tmp = np.zeros(shape=(input_img.shape[0], input_img.shape[1], 3))
+            tmp[:, :, 0] = input_img
+            tmp[:, :, 1] = input_img
+            tmp[:, :, 2] = input_img
 
-            input = tmp
+            input_img = tmp
 
-        if len(input.shape) == 3:
-            input = np.expand_dims(input - mean / 255., 0)
+        if len(input_img.shape) == 3:
+            input_img = np.expand_dims(input_img - mean / 255., 0)
         else:
-            input[0, :, :, :] -= mean / 255.
+            input_img[0, :, :, :] -= mean / 255.
 
         # t0 = time.time()
 
-        net_output = self.model.predict(input)
+        net_output = self.model.predict(input_img)
 
         # print ("Elapsed time: {}").format(time.time() - t0)
 
