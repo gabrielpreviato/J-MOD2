@@ -1,14 +1,11 @@
 from keras.models import Model
-from keras.layers import Reshape, Flatten, Convolution2D, Dropout, Concatenate
-from keras.layers import Dense
+from keras.layers import Reshape, Convolution2D
 
-from lib.SampleType import DepthObstacles_SingleFrame, DepthObstacles_SingleFrame_Multiclass_2, \
-    DepthObstacles_SingleFrame_Multiclass_3
+from lib.SampleType import DepthObstacles_SingleFrame_Multiclass_2, DepthObstacles_SingleFrame_Multiclass_3
 
-from lib.DepthObjectives import root_mean_squared_logarithmic_loss, root_mean_squared_loss, mean_squared_loss, \
-    log_normals_loss, eigen_loss
-from lib.ObstacleDetectionObjectives import yolo_v1_loss_multiclass, iou_metric, recall, precision, mean_metric, \
-    variance_metric, yolo_v1_loss_multiclass_2, iou_metric_multiclass_2, recall_multiclass_2, precision_multiclass_2, \
+from lib.DepthObjectives import log_normals_loss
+from lib.ObstacleDetectionObjectives import yolo_v1_loss_multiclass_2, iou_metric_multiclass_2, recall_multiclass_2, \
+    precision_multiclass_2, \
     mean_metric_multiclass_2, variance_metric_multiclass_2, yolo_v1_loss_multiclass_3, recall_multiclass_3, \
     mean_metric_multiclass_3, precision_multiclass_3, iou_metric_multiclass_3, variance_metric_multiclass_3
 from lib.DepthMetrics import rmse_metric, logrmse_metric, sc_inv_logrmse_metric
@@ -17,13 +14,13 @@ import numpy as np
 
 from DepthFCNModel import DepthFCNModel
 
-from lib.Dataset import UnrealDatasetDepthSupervised
 from lib.Dataset import SoccerFieldDatasetDepthSupervised
-from lib.DataGenerationStrategy import SingleFrameGenerationStrategy, PairGenerationStrategy
+from lib.DataGenerationStrategy import SingleFrameGenerationStrategy
 
-from keras.optimizers import Adam, Adadelta, SGD
+from keras.optimizers import Adam
 
-from lib.EvaluationUtils import get_detected_obstacles_from_detector_multiclass
+from lib.EvaluationUtils import get_detected_obstacles_from_detector_multiclass_2, \
+    get_detected_obstacles_from_detector_multiclass_3
 
 import matplotlib.pyplot as plt
 
@@ -248,8 +245,14 @@ class ODL(DepthFCNModel):
         pred_depth = net_output[0] * 19.75
         pred_detection = net_output[1]
 
-        pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector_multiclass(pred_detection,
-                                                                                             self.config.detector_confidence_thr)
+        if self.number_classes == 2:
+            pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector_multiclass_2(pred_detection,
+                                                                                                   self.config.detector_confidence_thr)
+        elif self.number_classes == 3:
+            pred_obstacles, rgb_with_detection = get_detected_obstacles_from_detector_multiclass_3(pred_detection,
+                                                                                                   self.config.detector_confidence_thr)
+        else:
+            raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
 
         correction_factor = self.compute_correction_factor(pred_depth, pred_obstacles)
 
@@ -264,7 +267,7 @@ class ODL(DepthFCNModel):
 
         for obstacle in obstacles:
             depth_roi = depth[0, np.max((obstacle.y, 0)):np.min((obstacle.y + obstacle.h, depth.shape[1] - 1)),
-                        np.max((obstacle.x, 0)):np.min((obstacle.x + obstacle.w, depth.shape[2] - 1)), 0]
+                              np.max((obstacle.x, 0)):np.min((obstacle.x + obstacle.w, depth.shape[2] - 1)), 0]
 
             if len(depth_roi) > 0:
                 mean_est = np.mean(depth_roi)

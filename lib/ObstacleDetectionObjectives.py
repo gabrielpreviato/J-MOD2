@@ -282,7 +282,7 @@ def iou_metric_multiclass_2(y_true, y_pred):
     return ave_iou
 
 
-def mean_metric_3(y_true, y_pred):
+def mean_metric(y_true, y_pred):
     truth_m_tensor = K.expand_dims(y_true[:, :, 5], 2)
     pred_m_tensor = K.expand_dims(y_pred[:, :, 5], 2)
 
