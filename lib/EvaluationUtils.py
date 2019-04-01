@@ -406,7 +406,17 @@ def get_detected_obstacles_from_detector_multiclass_4(prediction, confidence_thr
 
         best_class = np.argmax(class_confidence)
 
-        confidence_list.append([class_confidence[best_class], Classes.generate_class(best_class)])
+        enum_class = 0
+        if best_class == 0:
+            enum_class = 3
+        elif best_class == 1:
+            enum_class = 4
+        elif best_class == 2:
+            enum_class = 1
+        elif best_class == 3:
+            enum_class = 2
+
+        confidence_list.append([class_confidence[best_class], Classes.generate_class(enum_class)])
 
     conf = np.asarray([i[0] for i in confidence_list], dtype=np.float32)
     # Evaluate prediction only on high confidence detections. If confidence over a certain threshold, confidence = 1

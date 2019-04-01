@@ -25,7 +25,7 @@ def main(_):
   rng = np.random.RandomState(config.random_seed)
   tf.set_random_seed(config.random_seed)
 
-  model = ODL(config)
+  model = ODL(4, config)
   # model = EigenModel_Scale2(config)
   trainer = Trainer(config, model, rng)
 

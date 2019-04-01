@@ -61,6 +61,7 @@ def read_labels_gt_viewer(obstacles_gt):
 
     return labels
 
+
 def read_labels_gt_viewer_multiclass(obstacles_gt):
     with open(obstacles_gt, 'r') as f:
         obstacles = f.readlines()
@@ -70,7 +71,7 @@ def read_labels_gt_viewer_multiclass(obstacles_gt):
 
     for obs in obstacles:
         parsed_str_obs = obs.split(" ")
-        parsed_obs = np.zeros(shape=(9))
+        parsed_obs = np.zeros(shape=9)
         i = 0
         for n in parsed_str_obs:
             if i < 2:
@@ -95,6 +96,7 @@ def read_labels_gt_viewer_multiclass(obstacles_gt):
 
     return labels
 
+
 def read_labels_gt_viewer_multiclass_2(obstacles_gt):
     with open(obstacles_gt, 'r') as f:
         obstacles = f.readlines()
@@ -104,7 +106,7 @@ def read_labels_gt_viewer_multiclass_2(obstacles_gt):
 
     for obs in obstacles:
         parsed_str_obs = obs.split(" ")
-        parsed_obs = np.zeros(shape=(9))
+        parsed_obs = np.zeros(shape=9)
         i = 0
         for n in parsed_str_obs:
             if i < 2:
@@ -164,13 +166,13 @@ for test_dir in test_dirs:
         seg = cv2.imread(seg_path, 0)
         obs = []
         if model_name == 'odl':
-            obs = read_labels_gt_viewer_multiclass_2(obs_path)
+            obs = read_labels_gt_viewer_multiclass(obs_path)
         else:
             obs = read_labels_gt_viewer(obs_path)
 
         #Normalize input between 0 and 1, resize if required
 
-        rgb, gt, seg = preprocess_data(rgb_raw, gt, seg, w=config.input_width,h=config.input_height, resize_only_rgb = True)
+        rgb, gt, seg = preprocess_data(rgb_raw, gt, seg, w=config.input_width, h=config.input_height, resize_only_rgb = True)
 
         #Forward pass to the net
         results = model.run(rgb)
