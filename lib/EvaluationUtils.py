@@ -8,6 +8,7 @@ import math
 import os
 
 from ObstacleDetectionObjectives import numpy_iou
+from sklearn.metrics import confusion_matrix
 
 from Classes import *
 
@@ -344,6 +345,7 @@ def get_detected_obstacles_from_detector_multiclass_2(prediction, confidence_thr
 
     return obstacles, output_img
 
+
 def get_detected_obstacles_from_detector_multiclass_3(prediction, confidence_thr=0.65, output_img=None):
     def vec_sigmoid(x):
         return 1 / (1 + np.exp(-x))
@@ -450,6 +452,64 @@ def get_detected_obstacles_from_detector_multiclass_4(prediction, confidence_thr
     obstacles = get_obstacles_from_list_multiclass(detected_obstacles)
 
     return obstacles, output_img
+
+
+def from_obs_list_to_conf_matrix(obs_list):
+    obs_enum = []
+    for obs in obs_list:
+        obs_enum.append(obs.class_obj.class_enum)
+
+    return obs_enum
+
+
+def confusion_list_multiclass_4(prediction, gt_obstacles, confidence_thr=0.65):
+    def vec_sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    if len(prediction.shape) == 2:
+        prediction = np.expand_dims(prediction, 0)
+
+    conf_list_pred = []
+    for val in prediction[0, :, 0:4]:
+        class_confidence = vec_sigmoid(val)
+
+        best_class = np.argmax(class_confidence)
+
+        enum_class = 'nothing'
+        if not np.any(np.where(class_confidence[best_class] > confidence_thr, True, False)):
+            enum_class = 'nothing'
+        elif best_class == 0:
+            enum_class = 'robot_team'
+        elif best_class == 1:
+            enum_class = 'robot_opponent'
+        elif best_class == 2:
+            enum_class = 'ball'
+        elif best_class == 3:
+            enum_class = 'goal'
+
+        conf_list_pred.append(enum_class)
+
+    conf_list_true = []
+    for val in gt_obstacles[0, :, 0:4]:
+        class_confidence = vec_sigmoid(val)
+
+        best_class = np.argmax(class_confidence)
+
+        enum_class = 'nothing'
+        if not np.any(np.where(class_confidence[best_class] > confidence_thr, True, False)):
+            enum_class = 'nothing'
+        elif best_class == 0:
+            enum_class = 'robot_team'
+        elif best_class == 1:
+            enum_class = 'robot_opponent'
+        elif best_class == 2:
+            enum_class = 'ball'
+        elif best_class == 3:
+            enum_class = 'goal'
+
+        conf_list_true.append(enum_class)
+
+    return conf_list_pred, conf_list_true
 
 
 def compute_detection_stats(detected_obstacles, gt_obstacles, iou_thresh=0.25):
