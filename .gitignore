@@ -38,3 +38,4 @@ env/*
 save
 .cpu-tf/
 graphs
+*.log
