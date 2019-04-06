@@ -9,7 +9,7 @@ from lib.Classes import Classes
 from lib.Evaluators import JMOD2Stats
 
 # python evaluate_on_soccerfield.py --data_set_dir /data --data_train_dirs 09_D --data_test_dirs 09_D --is_train False --dataset Soccer --is_deploy False --weights_path weights/nt-180-0.02.hdf5 --resume_training True
-
+from lib.SampleType import DepthObstacles_SingleFrame_Multiclass_4
 
 
 def preprocess_data(rgb, gt, seg, w=256, h=160, crop_w=0, crop_h=0, resize_only_rgb = False):
@@ -134,6 +134,42 @@ def read_labels_gt_viewer_multiclass_2(obstacles_gt):
 
     return labels
 
+
+def labels_from_file_multiclass_4(obstacles_gt):
+    with open(obstacles_gt, 'r') as f:
+        obstacles = f.readlines()
+    obstacles = [x.strip() for x in obstacles]
+
+    obstacles_label = np.zeros(shape=(5, 8, 10))
+
+    for obs_ in obstacles:
+        parsed_str_obs = obs_.split(" ")
+        parsed_obs = np.zeros(shape=9)
+        i_ = 0
+        for n in parsed_str_obs:
+            if i_ < 2:
+                parsed_obs[i_] = int(n)
+            elif i_ == 8:
+                parsed_obs[i_] = Classes.str_to_class_enum(n)
+            else:
+                parsed_obs[i_] = float(n)
+            i_ += 1
+
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 0] = 1.0 if parsed_obs[8] == 3 else 0.0  # class 3
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 1] = 1.0 if parsed_obs[8] == 4 else 0.0  # class 4
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 2] = 1.0 if parsed_obs[8] == 1 else 0.0  # class 1
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 3] = 1.0 if parsed_obs[8] == 2 else 0.0  # class 2
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 4] = parsed_obs[2]  # x
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 5] = parsed_obs[3]  # y
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 6] = parsed_obs[4]  # w
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 7] = parsed_obs[5]  # h
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 8] = parsed_obs[6] * 0.1  # m
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 9] = parsed_obs[7] * 0.1  # v
+    labels = np.reshape(obstacles_label, (40, 10))
+
+    return labels
+
+
 #edit config.py as required
 config, unparsed = get_config()
 
@@ -153,11 +189,16 @@ jmod2_stats = JMOD2Stats(model_name, compute_depth_branch_stats_on_obs=not detec
 
 i = 0
 
+confMatrix = True
+true_obs = []
+pred_obs = []
+
 for test_dir in test_dirs:
     depth_gt_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'depth', '*' + '.png')))
     rgb_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'rgb', '*' + '.png')))
     seg_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'segmentation', '*' + '.png')))
     obs_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'obstacles_10m', '*' + '.txt')))
+
 
     for gt_path, rgb_path, seg_path, obs_path in zip(depth_gt_paths, rgb_paths, seg_paths, obs_paths):
 
@@ -200,6 +241,14 @@ for test_dir in test_dirs:
             gt_obs = EvaluationUtils.get_obstacles_from_list_multiclass(obs)
         else:
             gt_obs = EvaluationUtils.get_obstacles_from_list(obs)
+
+        if confMatrix:
+            obs_labels = labels_from_file_multiclass_4(obs_path)
+
+            conf_list_pred, conf_list_true = EvaluationUtils.confusion_list_multiclass_4(results[3], obs_labels)
+
+            true_obs += EvaluationUtils.from_obs_list_to_conf_matrix(obs)
+            pred_obs += EvaluationUtils.from_obs_list_to_conf_matrix(results[1])
 
         if showImages:
             if results[1] is not None:

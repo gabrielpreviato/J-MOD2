@@ -283,7 +283,7 @@ class ODL(DepthFCNModel):
 
         corrected_depth = np.array(pred_depth) * correction_factor
 
-        return [pred_depth, pred_obstacles, corrected_depth]
+        return [pred_depth, pred_obstacles, corrected_depth, pred_detection]
 
     def compute_correction_factor(self, depth, obstacles):
 
