@@ -116,6 +116,8 @@ class DepthObstacles_SingleFrame_Multiclass_2(DepthObstacles_SingleFrame):
                 if i < 2:
                     parsed_obs[i] = int(n)
                 elif i == 8:
+                    if n == 'robot_team' or n == 'robot_opponent':
+                        n = 'robot'
                     parsed_obs[i] = Classes.str_to_class_enum(n)
                 else:
                     parsed_obs[i] = float(n)
@@ -124,7 +126,7 @@ class DepthObstacles_SingleFrame_Multiclass_2(DepthObstacles_SingleFrame):
             if parsed_obs[8] == 2:
                 continue
 
-            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 0] = 1.0 if parsed_obs[8] == 3 or parsed_obs[8] == 4 else 0.0  # class 1 (3/4)
+            obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 0] = 1.0 if parsed_obs[8] == 0 else 0.0  # class 1 (3/4)
             obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 1] = 1.0 if parsed_obs[8] == 1 else 0.0  # class 2
             obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 2] = parsed_obs[2]  # x
             obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 3] = parsed_obs[3]  # y
@@ -158,6 +160,8 @@ class DepthObstacles_SingleFrame_Multiclass_3(DepthObstacles_SingleFrame):
                 if i < 2:
                     parsed_obs[i] = int(n)
                 elif i == 8:
+                    if n == 'robot_team' or n == 'robot_opponent':
+                        n = 'robot'
                     parsed_obs[i] = Classes.str_to_class_enum(n)
                 else:
                     parsed_obs[i] = float(n)

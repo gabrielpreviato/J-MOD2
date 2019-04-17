@@ -5,6 +5,7 @@ class Classes(object):
     def __init__(self, class_enum):
         self.class_enum = class_enum
 
+        self.is_nothing = False
         self.color = np.array((0, 0, 255))
 
     @staticmethod
@@ -20,7 +21,7 @@ class Classes(object):
         elif class_enum == 4:
             return RobotOpponent()
         else:
-            raise Exception("Can't find Class with enum: " + str(class_enum))
+            return Nothing()
 
     @staticmethod
     def str_to_class_enum(string):
@@ -35,7 +36,16 @@ class Classes(object):
         elif string == 'robot_opponent':
             return 4
         else:
-            raise Exception("Can't find Class: " + string)
+            return -1
+
+
+class Nothing(Classes):
+    def __init__(self):
+        super(Nothing, self).__init__(0)
+
+        self.is_nothing = True
+
+        self.color = np.array((0, 0, 0))
 
 
 class Robot(Classes):

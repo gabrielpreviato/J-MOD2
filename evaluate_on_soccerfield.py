@@ -5,7 +5,7 @@ from config import get_config
 import os
 from glob import glob
 
-from lib.Classes import Classes
+from lib.Classes import Classes, Nothing
 from lib.Evaluators import JMOD2Stats
 
 # python evaluate_on_soccerfield.py --data_set_dir /data --data_train_dirs 09_D --data_test_dirs 09_D --is_train False --dataset Soccer --is_deploy False --weights_path weights/nt-180-0.02.hdf5 --resume_training True
@@ -62,7 +62,7 @@ def read_labels_gt_viewer(obstacles_gt):
     return labels
 
 
-def read_labels_gt_viewer_multiclass(obstacles_gt):
+def read_labels_gt_viewer_multiclass(obstacles_gt, number_classes):
     with open(obstacles_gt, 'r') as f:
         obstacles = f.readlines()
     obstacles = [x.strip() for x in obstacles]
@@ -77,6 +77,11 @@ def read_labels_gt_viewer_multiclass(obstacles_gt):
             if i < 2:
                 parsed_obs[i] = int(n)
             elif i == 8:
+                if (number_classes == 2 or number_classes == 3) and (n == 'robot_team' or n == 'robot_opponent'):
+                    n = 'robot'
+                elif number_classes == 2 and n == 'goal':
+                    n = 'nothing'
+
                 parsed_obs[i] = Classes.str_to_class_enum(n)
             else:
                 parsed_obs[i] = float(n)
@@ -91,8 +96,10 @@ def read_labels_gt_viewer_multiclass(obstacles_gt):
                   [parsed_obs[6], parsed_obs[7]],
                   parsed_obs[8]
                   ]
-        labels.append(object)
 
+        # Object with last value equal to -1 is a dispensable object
+        if object[-1] != -1:
+            labels.append(object)
 
     return labels
 
@@ -112,6 +119,9 @@ def read_labels_gt_viewer_multiclass_2(obstacles_gt):
             if i < 2:
                 parsed_obs[i] = int(n)
             elif i == 8:
+                if n == 'robot_team' or n == 'robot_opponent':
+                    n = 'robot'
+
                 parsed_obs[i] = Classes.str_to_class_enum(n)
             else:
                 parsed_obs[i] = float(n)
@@ -175,7 +185,7 @@ config, unparsed = get_config()
 
 #Edit model_name to choose model between ['jmod2','cadena','detector','depth','eigen']
 model_name = 'odl'
-number_classes = 2
+number_classes = 3
 
 model, detector_only = EvaluationUtils.load_model(model_name, config, number_classes)
 
@@ -207,7 +217,7 @@ for test_dir in test_dirs:
         seg = cv2.imread(seg_path, 0)
         obs = []
         if model_name == 'odl':
-            obs = read_labels_gt_viewer_multiclass(obs_path)
+            obs = read_labels_gt_viewer_multiclass(obs_path, number_classes)
         else:
             obs = read_labels_gt_viewer(obs_path)
 
@@ -248,18 +258,18 @@ for test_dir in test_dirs:
             conf_list_pred, conf_list_true = EvaluationUtils.confusion_list_multiclass_4(results[3], obs_labels)
 
             true_obs += EvaluationUtils.from_obs_list_to_conf_matrix(obs)
-            pred_obs += EvaluationUtils.from_obs_list_to_conf_matrix(results[1])
+            pred_obs += EvaluationUtils.from_result_to_conf_matrix(results[1])
 
         if showImages:
             if results[1] is not None:
                 if model_name == 'odl':
                     print len(results[1])
-                    EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save",
-                                                    file_name="sav_" + str(i) + ".png", sleep_for=10)
+                    EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save_4_symp",
+                                                    file_name="sav_" + str(i) + ".png", sleep_for=10, multiclass=number_classes)
                 else:
                     EvaluationUtils.show_detections(rgb_raw, results[1], gt_obs, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
             if results[0] is not None:
-                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
+                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save_4_symp", file_name="sav_"+ str(i) +".png", sleep_for=10)
 
         jmod2_stats.run(results, [depth_gt, gt_obs])
 

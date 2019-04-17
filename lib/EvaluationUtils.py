@@ -457,10 +457,17 @@ def get_detected_obstacles_from_detector_multiclass_4(prediction, confidence_thr
 def from_obs_list_to_conf_matrix(obs_list):
     obs_enum = []
     for obs in obs_list:
-        obs_enum.append(obs.class_obj.class_enum)
+        obs_enum.append(obs[-1].class_enum)
 
     return obs_enum
 
+
+def from_result_to_conf_matrix(result_list):
+    obs_enum = []
+    for obs in result_list:
+        obs_enum.append(obs.class_obj.class_enum)
+
+    return obs_enum
 
 def confusion_list_multiclass_4(prediction, gt_obstacles, confidence_thr=0.65):
     def vec_sigmoid(x):
@@ -490,7 +497,7 @@ def confusion_list_multiclass_4(prediction, gt_obstacles, confidence_thr=0.65):
         conf_list_pred.append(enum_class)
 
     conf_list_true = []
-    for val in gt_obstacles[0, :, 0:4]:
+    for val in gt_obstacles[:, 0:4]:
         class_confidence = vec_sigmoid(val)
 
         best_class = np.argmax(class_confidence)
@@ -666,7 +673,7 @@ def show_detections(rgb, detection, gt=None, save=False, save_dir=None, file_nam
 
 
 def show_detections_multiclass(rgb, detection, gt=None, save=False, save_dir=None, file_name=None, print_depths=False,
-                               sleep_for=50, multiclass=False):
+                               sleep_for=50, multiclass=2):
     if len(rgb.shape) == 4:
         rgb = rgb[0, :, :, :]
 
