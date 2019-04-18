@@ -8,6 +8,9 @@ from glob import glob
 from lib.Classes import Classes, Nothing
 from lib.Evaluators import JMOD2Stats
 
+import sklearn.metrics
+import matplotlib.pyplot as plt
+
 # python evaluate_on_soccerfield.py --data_set_dir /data --data_train_dirs 09_D --data_test_dirs 09_D --is_train False --dataset Soccer --is_deploy False --weights_path weights/nt-180-0.02.hdf5 --resume_training True
 from lib.SampleType import DepthObstacles_SingleFrame_Multiclass_4
 
@@ -185,7 +188,7 @@ config, unparsed = get_config()
 
 #Edit model_name to choose model between ['jmod2','cadena','detector','depth','eigen']
 model_name = 'odl'
-number_classes = 3
+number_classes = 4
 
 model, detector_only = EvaluationUtils.load_model(model_name, config, number_classes)
 
@@ -202,6 +205,7 @@ i = 0
 confMatrix = True
 true_obs = []
 pred_obs = []
+conf_mat = np.zeros((5, 5), dtype=int)
 
 for test_dir in test_dirs:
     depth_gt_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'depth', '*' + '.png')))
@@ -209,8 +213,9 @@ for test_dir in test_dirs:
     seg_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'segmentation', '*' + '.png')))
     obs_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'obstacles_10m', '*' + '.txt')))
 
-
     for gt_path, rgb_path, seg_path, obs_path in zip(depth_gt_paths, rgb_paths, seg_paths, obs_paths):
+        if i > 300:
+            break
 
         rgb_raw = cv2.imread(rgb_path)
         gt = cv2.imread(gt_path, 0)
@@ -260,6 +265,9 @@ for test_dir in test_dirs:
             true_obs += EvaluationUtils.from_obs_list_to_conf_matrix(obs)
             pred_obs += EvaluationUtils.from_result_to_conf_matrix(results[1])
 
+            local_conf_mat = sklearn.metrics.confusion_matrix(conf_list_true, conf_list_pred, labels=["nothing", "goal", "ball", "robot_team", "robot_opponent"])
+            conf_mat = np.add(conf_mat, local_conf_mat)
+
         if showImages:
             if results[1] is not None:
                 if model_name == 'odl':
@@ -275,4 +283,72 @@ for test_dir in test_dirs:
 
         i += 1
 
+cv2.destroyWindow('Detections(RED:predictions,GREEN: GT')
+cv2.destroyWindow('Predicted Depth')
+cv2.destroyWindow('GT Depth')
+
 results = jmod2_stats.return_results()
+
+
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title=None,
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if not title:
+        if normalize:
+            title = 'Normalized confusion matrix'
+        else:
+            title = 'Confusion matrix, without normalization'
+
+    # # Compute confusion matrix
+    # cm = confusion_matrix(y_true, y_pred)
+    # # Only use the labels that appear in the data
+    # classes = classes[unique_labels(y_true, y_pred)]
+
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix')
+
+    print(cm)
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
+    ax.figure.colorbar(im, ax=ax)
+    # We want to show all ticks...
+    ax.set(xticks=np.arange(cm.shape[1]),
+           yticks=np.arange(cm.shape[0]),
+           # ... and label them with the respective list entries
+           xticklabels=classes, yticklabels=classes,
+           title=title,
+           ylabel='True label',
+           xlabel='Predicted label')
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+
+    # Loop over data dimensions and create text annotations.
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, format(cm[i, j], fmt),
+                    ha="center", va="center",
+                    color="white" if cm[i, j] > thresh else "black")
+    fig.tight_layout()
+    return ax
+
+
+# Normalize nothingXnothing in confusion matrix
+conf_mat[0][0] = conf_mat[0][0] / 40
+
+plot_confusion_matrix(conf_mat, classes=["nothing", "goal", "ball", "robot_team", "robot_opponent"],
+                      normalize=False, title='Confusion matrix')
+
+plt.savefig('confusion_matrix_' + str(number_classes) + '.png', bbox_inches='tight')
