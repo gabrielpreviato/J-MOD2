@@ -352,3 +352,4 @@ plot_confusion_matrix(conf_mat, classes=["nothing", "goal", "ball", "robot_team"
                       normalize=False, title='Confusion matrix')
 
 plt.savefig('confusion_matrix_' + str(number_classes) + '.png', bbox_inches='tight')
+#--data_set_dir /home/previato/LaRoCS/dataset --data_train_dirs four_classes_test_1 --data_test_dirs four_classes_test_set --is_train False --dataset Soccer --is_deploy False --gpu_memory_fraction 0.9 --weights_path /data/J-MOD2/weights/5-classes-60-0.02.hdf5
