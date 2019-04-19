@@ -565,6 +565,48 @@ def confusion_list_multiclass_3(prediction, gt_obstacles, confidence_thr=0.65):
     return conf_list_pred, conf_list_true
 
 
+def confusion_list_multiclass_2(prediction, gt_obstacles, confidence_thr=0.65):
+    def vec_sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    if len(prediction.shape) == 2:
+        prediction = np.expand_dims(prediction, 0)
+
+    conf_list_pred = []
+    for val in prediction[0, :, 0:2]:
+        class_confidence = vec_sigmoid(val)
+
+        best_class = np.argmax(class_confidence)
+
+        enum_class = 'nothing'
+        if not np.any(np.where(class_confidence[best_class] > confidence_thr, True, False)):
+            enum_class = 'nothing'
+        elif best_class == 0:
+            enum_class = 'robot'
+        elif best_class == 1:
+            enum_class = 'ball'
+
+        conf_list_pred.append(enum_class)
+
+    conf_list_true = []
+    for val in gt_obstacles[:, 0:2]:
+        class_confidence = vec_sigmoid(val)
+
+        best_class = np.argmax(class_confidence)
+
+        enum_class = 'nothing'
+        if not np.any(np.where(class_confidence[best_class] > confidence_thr, True, False)):
+            enum_class = 'nothing'
+        elif best_class == 0:
+            enum_class = 'robot'
+        elif best_class == 1:
+            enum_class = 'ball'
+
+        conf_list_true.append(enum_class)
+
+    return conf_list_pred, conf_list_true
+
+
 def compute_detection_stats(detected_obstacles, gt_obstacles, iou_thresh=0.25):
     # convert in Obstacle object the input list, created by get_detected_obstacles_from_detector
 
