@@ -74,6 +74,7 @@ misc_arg.add_argument('--gpu_memory_fraction', type=float, default=0.5)
 misc_arg.add_argument('--max_image_summary',type=int, default=4)
 
 misc_arg.add_argument('--graphs_dir', type=str, default='graphs')
+misc_arg.add_argument('--number_classes', type=int, default=4)
 
 
 def get_config():
