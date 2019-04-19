@@ -196,10 +196,10 @@ def labels_from_file_multiclass_3(obstacles_gt):
         i_ = 0
         for n in parsed_str_obs:
             if i_ < 2:
-                if n == 'robot_team' or n == 'robot_opponent':
-                    n = 'robot'
                 parsed_obs[i_] = int(n)
             elif i_ == 8:
+                if n == 'robot_team' or n == 'robot_opponent':
+                    n = 'robot'
                 parsed_obs[i_] = Classes.str_to_class_enum(n)
             else:
                 parsed_obs[i_] = float(n)
