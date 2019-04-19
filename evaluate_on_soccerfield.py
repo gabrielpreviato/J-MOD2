@@ -342,7 +342,7 @@ for test_dir in test_dirs:
             if number_classes == 2:
                 conf_list_pred, conf_list_true = EvaluationUtils.confusion_list_multiclass_2(results[3], obs_labels)
                 local_conf_mat = sklearn.metrics.confusion_matrix(conf_list_true, conf_list_pred,
-                                                                  labels=["nothing", "goal", "robot"])
+                                                                  labels=["nothing", "ball", "robot"])
             elif number_classes == 3:
                 conf_list_pred, conf_list_true = EvaluationUtils.confusion_list_multiclass_3(results[3], obs_labels)
                 local_conf_mat = sklearn.metrics.confusion_matrix(conf_list_true, conf_list_pred,
