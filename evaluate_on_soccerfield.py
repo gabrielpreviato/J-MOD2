@@ -183,6 +183,39 @@ def labels_from_file_multiclass_4(obstacles_gt):
     return labels
 
 
+def labels_from_file_multiclass_3(obstacles_gt):
+    with open(obstacles_gt, 'r') as f:
+        obstacles = f.readlines()
+    obstacles = [x.strip() for x in obstacles]
+
+    obstacles_label = np.zeros(shape=(5, 8, 9))
+
+    for obs_ in obstacles:
+        parsed_str_obs = obs_.split(" ")
+        parsed_obs = np.zeros(shape=9)
+        i_ = 0
+        for n in parsed_str_obs:
+            if i_ < 2:
+                parsed_obs[i_] = int(n)
+            elif i_ == 8:
+                parsed_obs[i_] = Classes.str_to_class_enum(n)
+            else:
+                parsed_obs[i_] = float(n)
+            i_ += 1
+
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 0] = 1.0 if parsed_obs[8] == 0 else 0.0  # class 0
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 2] = 1.0 if parsed_obs[8] == 1 else 0.0  # class 1
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 3] = 1.0 if parsed_obs[8] == 2 else 0.0  # class 2
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 4] = parsed_obs[2]  # x
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 5] = parsed_obs[3]  # y
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 6] = parsed_obs[4]  # w
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 7] = parsed_obs[5]  # h
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 8] = parsed_obs[6] * 0.1  # m
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 9] = parsed_obs[7] * 0.1  # v
+    labels = np.reshape(obstacles_label, (40, 10))
+
+    return labels
+
 #edit config.py as required
 config, unparsed = get_config()
 
@@ -214,8 +247,6 @@ for test_dir in test_dirs:
     obs_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'obstacles_10m', '*' + '.txt')))
 
     for gt_path, rgb_path, seg_path, obs_path in zip(depth_gt_paths, rgb_paths, seg_paths, obs_paths):
-        if i > 300:
-            break
 
         rgb_raw = cv2.imread(rgb_path)
         gt = cv2.imread(gt_path, 0)
@@ -258,14 +289,11 @@ for test_dir in test_dirs:
             gt_obs = EvaluationUtils.get_obstacles_from_list(obs)
 
         if confMatrix:
-            obs_labels = labels_from_file_multiclass_4(obs_path)
+            obs_labels = labels_from_file_multiclass_3(obs_path)
 
-            conf_list_pred, conf_list_true = EvaluationUtils.confusion_list_multiclass_4(results[3], obs_labels)
+            conf_list_pred, conf_list_true = EvaluationUtils.confusion_list_multiclass_3(results[3], obs_labels)
 
-            true_obs += EvaluationUtils.from_obs_list_to_conf_matrix(obs)
-            pred_obs += EvaluationUtils.from_result_to_conf_matrix(results[1])
-
-            local_conf_mat = sklearn.metrics.confusion_matrix(conf_list_true, conf_list_pred, labels=["nothing", "goal", "ball", "robot_team", "robot_opponent"])
+            local_conf_mat = sklearn.metrics.confusion_matrix(conf_list_true, conf_list_pred, labels=["nothing", "goal", "ball", "robot"])
             conf_mat = np.add(conf_mat, local_conf_mat)
 
         if showImages:
@@ -348,7 +376,7 @@ def plot_confusion_matrix(cm, classes,
 # Normalize nothingXnothing in confusion matrix
 conf_mat[0][0] = conf_mat[0][0] / 40
 
-plot_confusion_matrix(conf_mat, classes=["nothing", "goal", "ball", "robot_team", "robot_opponent"],
+plot_confusion_matrix(conf_mat, classes=["nothing", "goal", "ball", "robot"],
                       normalize=False, title=' ')
 
 plt.savefig('confusion_matrix_' + str(number_classes) + '_colored.png', bbox_inches='tight')
