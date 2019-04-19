@@ -204,15 +204,15 @@ def labels_from_file_multiclass_3(obstacles_gt):
             i_ += 1
 
         obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 0] = 1.0 if parsed_obs[8] == 0 else 0.0  # class 0
-        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 2] = 1.0 if parsed_obs[8] == 1 else 0.0  # class 1
-        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 3] = 1.0 if parsed_obs[8] == 2 else 0.0  # class 2
-        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 4] = parsed_obs[2]  # x
-        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 5] = parsed_obs[3]  # y
-        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 6] = parsed_obs[4]  # w
-        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 7] = parsed_obs[5]  # h
-        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 8] = parsed_obs[6] * 0.1  # m
-        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 9] = parsed_obs[7] * 0.1  # v
-    labels = np.reshape(obstacles_label, (40, 10))
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 1] = 1.0 if parsed_obs[8] == 1 else 0.0  # class 1
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 2] = 1.0 if parsed_obs[8] == 2 else 0.0  # class 2
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 3] = parsed_obs[2]  # x
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 4] = parsed_obs[3]  # y
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 5] = parsed_obs[4]  # w
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 6] = parsed_obs[5]  # h
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 7] = parsed_obs[6] * 0.1  # m
+        obstacles_label[int(parsed_obs[1]), int(parsed_obs[0]), 8] = parsed_obs[7] * 0.1  # v
+    labels = np.reshape(obstacles_label, (40, 9))
 
     return labels
 
