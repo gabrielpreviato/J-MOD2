@@ -314,12 +314,12 @@ for test_dir in test_dirs:
             if results[1] is not None:
                 if model_name == 'odl':
                     print len(results[1])
-                    EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save_"+number_classes+"_colored",
+                    EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save_"+str(number_classes)+"_colored",
                                                     file_name="sav_" + str(i) + ".png", sleep_for=10, multiclass=number_classes)
                 else:
                     EvaluationUtils.show_detections(rgb_raw, results[1], gt_obs, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
             if results[0] is not None:
-                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save_"+number_classes+"_colored", file_name="sav_"+ str(i) +".png", sleep_for=10)
+                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save_"+str(number_classes)+"_colored", file_name="sav_"+ str(i) +".png", sleep_for=10)
 
         jmod2_stats.run(results, [depth_gt, gt_obs])
 
