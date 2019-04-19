@@ -238,7 +238,7 @@ i = 0
 confMatrix = True
 true_obs = []
 pred_obs = []
-conf_mat = np.zeros((5, 5), dtype=int)
+conf_mat = np.zeros((number_classes + 1, number_classes + 1), dtype=int)
 
 for test_dir in test_dirs:
     depth_gt_paths = sorted(glob(os.path.join(dataset_main_dir, test_dir, 'depth', '*' + '.png')))
@@ -289,23 +289,37 @@ for test_dir in test_dirs:
             gt_obs = EvaluationUtils.get_obstacles_from_list(obs)
 
         if confMatrix:
-            obs_labels = labels_from_file_multiclass_3(obs_path)
+            obs_labels = []
+            if number_classes == 3:
+                obs_labels = labels_from_file_multiclass_3(obs_path)
+            elif number_classes == 4:
+                obs_labels = labels_from_file_multiclass_4(obs_path)
 
-            conf_list_pred, conf_list_true = EvaluationUtils.confusion_list_multiclass_3(results[3], obs_labels)
+            conf_list_pred = []
+            conf_list_true = []
+            local_conf_mat = None
 
-            local_conf_mat = sklearn.metrics.confusion_matrix(conf_list_true, conf_list_pred, labels=["nothing", "goal", "ball", "robot"])
+            if number_classes == 3:
+                conf_list_pred, conf_list_true = EvaluationUtils.confusion_list_multiclass_3(results[3], obs_labels)
+                local_conf_mat = sklearn.metrics.confusion_matrix(conf_list_true, conf_list_pred,
+                                                                  labels=["nothing", "goal", "ball", "robot"])
+            elif number_classes == 4:
+                conf_list_pred, conf_list_true = EvaluationUtils.confusion_list_multiclass_4(results[3], obs_labels)
+                local_conf_mat = sklearn.metrics.confusion_matrix(conf_list_true, conf_list_pred,
+                                                                  labels=["nothing", "goal", "ball", "robot_team", "robot_opponent"])
+
             conf_mat = np.add(conf_mat, local_conf_mat)
 
         if showImages:
             if results[1] is not None:
                 if model_name == 'odl':
                     print len(results[1])
-                    EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save_4_colored",
+                    EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save_"+number_classes+"_colored",
                                                     file_name="sav_" + str(i) + ".png", sleep_for=10, multiclass=number_classes)
                 else:
                     EvaluationUtils.show_detections(rgb_raw, results[1], gt_obs, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
             if results[0] is not None:
-                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save_4_colored", file_name="sav_"+ str(i) +".png", sleep_for=10)
+                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save_"+number_classes+"_colored", file_name="sav_"+ str(i) +".png", sleep_for=10)
 
         jmod2_stats.run(results, [depth_gt, gt_obs])
 
