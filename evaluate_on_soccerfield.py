@@ -358,12 +358,12 @@ for test_dir in test_dirs:
             if results[1] is not None:
                 if model_name == 'odl':
                     print len(results[1])
-                    EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save_"+str(number_classes)+"_colored",
+                    EvaluationUtils.show_detections_multiclass(rgb_raw, results[1], gt_obs, save=True, save_dir="save_"+str(number_classes)+"_symp",
                                                     file_name="sav_" + str(i) + ".png", sleep_for=10, multiclass=number_classes)
                 else:
                     EvaluationUtils.show_detections(rgb_raw, results[1], gt_obs, save=True, save_dir="save", file_name="sav_"+ str(i) +".png", sleep_for=10)
             if results[0] is not None:
-                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save_"+str(number_classes)+"_colored", file_name="sav_"+ str(i) +".png", sleep_for=10)
+                EvaluationUtils.show_depth(rgb_raw, depth_raw, gt, save=True, save_dir="save_"+str(number_classes)+"_symp", file_name="sav_"+ str(i) +".png", sleep_for=10)
 
         jmod2_stats.run(results, [depth_gt, gt_obs])
 
@@ -431,11 +431,12 @@ def plot_confusion_matrix(cm, classes,
     return ax
 
 
-# Normalize nothingXnothing in confusion matrix
-conf_mat[0][0] = conf_mat[0][0] / 40
+if confMatrix:
+    # Normalize nothingXnothing in confusion matrix
+    conf_mat[0][0] = conf_mat[0][0] / 40
 
-plot_confusion_matrix(conf_mat, classes=["nothing", "ball", "robot"],
-                      normalize=False, title=' ')
+    plot_confusion_matrix(conf_mat, classes=["nothing", "ball", "robot"],
+                          normalize=False, title=' ')
 
-plt.savefig('confusion_matrix_' + str(number_classes) + '_colored.png', bbox_inches='tight')
+    plt.savefig('confusion_matrix_' + str(number_classes) + '_colored.png', bbox_inches='tight')
 #--data_set_dir /home/previato/LaRoCS/dataset --data_train_dirs four_classes_test_1 --data_test_dirs four_classes_test_set --is_train False --dataset Soccer --is_deploy False --gpu_memory_fraction 0.9 --weights_path /data/J-MOD2/weights/5-classes-60-0.02.hdf5
