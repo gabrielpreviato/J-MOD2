@@ -355,7 +355,7 @@ class DepthDenoisingAESample(ImageDenoisingAESample):
         # depth = depth * 19.75 / 255.0
         depth = -4.586e-09 * (depth ** 4) + 3.382e-06 * (depth ** 3) - 0.000105 * (
         depth ** 2) + 0.04239 * depth + 0.04072
-        depth /= 19.75
+        depth /= 20.0
 
         return depth
 

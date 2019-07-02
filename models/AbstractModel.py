@@ -222,8 +222,8 @@ class AbstractModel(object):
         for x_test, y_test in self.test_data_generator():
             print('Testing img: ', curr_img)
             t0 = time.time()
-            output = self.model.predict(x_test) * 19.75
-            y_test = y_test * 19.75
+            output = self.model.predict(x_test) * 20.0
+            y_test = y_test * 20.0
             t1 = time.time()
             acc_frequency += 1 / (t1 - t0)
             print("Evaluation complete in " + str(t1 - t0) + " seconds")

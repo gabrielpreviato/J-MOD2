@@ -273,7 +273,7 @@ jmod2_stats = JMOD2Stats(model_name, compute_depth_branch_stats_on_obs=not detec
 
 i = 0
 
-confMatrix = True
+confMatrix = False
 true_obs = []
 pred_obs = []
 conf_mat = np.zeros((number_classes + 1, number_classes + 1), dtype=int)

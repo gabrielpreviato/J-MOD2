@@ -75,12 +75,17 @@ class ODL(DepthFCNModel):
         else:
             raise Exception("ODL not implemented with number of classes " + str(self.number_classes))
         i = 0
+        # for elem in label:
+        #     elem["depth"] = np.asarray(elem["depth"]).astype(np.float32)
+        #
+        #     elem["depth"] = -4.586e-09 * (elem["depth"] ** 4) + 3.382e-06 * (elem["depth"] ** 3) - 0.000105 * (
+        #             elem["depth"] ** 2) + 0.04239 * elem["depth"] + 0.04072
+        #     elem["depth"] /= 20.0
         for elem in label:
             elem["depth"] = np.asarray(elem["depth"]).astype(np.float32)
 
-            elem["depth"] = -4.586e-09 * (elem["depth"] ** 4) + 3.382e-06 * (elem["depth"] ** 3) - 0.000105 * (
-                    elem["depth"] ** 2) + 0.04239 * elem["depth"] + 0.04072
-            elem["depth"] /= 19.75
+            elem["depth"] /= 255.0
+            # elem["depth"] *= 20.0
 
             labels_depth[i, :, :, :] = elem["depth"]
             labels_obs[i, :, :] = np.asarray(elem["obstacles"]).astype(np.float32)
@@ -191,15 +196,15 @@ class ODL(DepthFCNModel):
 
         plt.close()
 
-        plt.plot(self.history.history['detection_output_loss'])
-        plt.plot(self.history.history['val_detection_output_loss'])
-        plt.title('Detection loss')
-        plt.ylabel('Loss')
-        plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig(self.config.graphs_dir + "/detec_loss_" + self.config.exp_name + ".png")
-
-        plt.close()
+        # plt.plot(self.history.history['detection_output_loss'])
+        # plt.plot(self.history.history['val_detection_output_loss'])
+        # plt.title('Detection loss')
+        # plt.ylabel('Loss')
+        # plt.xlabel('Epoch')
+        # plt.legend(['Train', 'Test'], loc='upper left')
+        # plt.savefig(self.config.graphs_dir + "/detec_loss_" + self.config.exp_name + ".png")
+        #
+        # plt.close()
 
         plt.plot(self.history.history['depth_output_rmse_metric'])
         plt.plot(self.history.history['val_depth_output_rmse_metric'])
@@ -221,25 +226,25 @@ class ODL(DepthFCNModel):
 
         plt.close()
 
-        plt.plot(self.history.history['detection_output_mean_metric'])
-        plt.plot(self.history.history['val_detection_output_mean_metric'])
-        plt.title('Detection Mean metric')
-        plt.ylabel('Mean metric')
-        plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig(self.config.graphs_dir + "/detec_mean_" + self.config.exp_name + ".png")
-
-        plt.close()
-
-        plt.plot(self.history.history['detection_output_variance_metric'])
-        plt.plot(self.history.history['val_detection_output_variance_metric'])
-        plt.title('Detection Variance metric')
-        plt.ylabel('Variance metric')
-        plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig(self.config.graphs_dir + "/detec_variance_" + self.config.exp_name + ".png")
-
-        plt.close()
+        # plt.plot(self.history.history['detection_output_mean_metric'])
+        # plt.plot(self.history.history['val_detection_output_mean_metric'])
+        # plt.title('Detection Mean metric')
+        # plt.ylabel('Mean metric')
+        # plt.xlabel('Epoch')
+        # plt.legend(['Train', 'Test'], loc='upper left')
+        # plt.savefig(self.config.graphs_dir + "/detec_mean_" + self.config.exp_name + ".png")
+        #
+        # plt.close()
+        #
+        # plt.plot(self.history.history['detection_output_variance_metric'])
+        # plt.plot(self.history.history['val_detection_output_variance_metric'])
+        # plt.title('Detection Variance metric')
+        # plt.ylabel('Variance metric')
+        # plt.xlabel('Epoch')
+        # plt.legend(['Train', 'Test'], loc='upper left')
+        # plt.savefig(self.config.graphs_dir + "/detec_variance_" + self.config.exp_name + ".png")
+        #
+        # plt.close()
 
     def run(self, input_img):
         # import time
@@ -264,7 +269,7 @@ class ODL(DepthFCNModel):
 
         # print ("Elapsed time: {}").format(time.time() - t0)
 
-        pred_depth = net_output[0] * 19.75
+        pred_depth = net_output[0] * 255.0
         pred_detection = net_output[1]
 
         if self.number_classes == 2:

@@ -25,7 +25,7 @@ def depth_to_meters_airsim(depth):
 
 
 def depth_to_meters_base(depth):
-    return depth * 19.75 / 255.
+    return depth * 20.0 / 255.
 
 
 class Obstacle(object):
@@ -270,9 +270,9 @@ def get_detected_obstacles_from_detector(prediction, confidence_thr=0.65, output
     y_pos = prediction[0, :, 2] * confidence
     ws = prediction[0, :, 3] * confidence
     hs = prediction[0, :, 4] * confidence
-    depth = prediction[0, :, 5] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
+    depth = prediction[0, :, 5] * confidence * 20.0 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
     variance = prediction[0, :,
-               6] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled down by 1000
+               6] * confidence * 20.0 * 1000  # J-MOD2 was trained with normalized variances scaled down by 1000
 
     IMG_WIDTH = 256
     IMG_HEIGHT = 160
@@ -319,8 +319,8 @@ def get_detected_obstacles_from_detector_multiclass_2(prediction, confidence_thr
     y_pos = prediction[0, :, 3] * confidence
     ws = prediction[0, :, 4] * confidence
     hs = prediction[0, :, 5] * confidence
-    depth = prediction[0, :, 6] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
-    variance = prediction[0, :, 7] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled
+    depth = prediction[0, :, 6] * confidence * 20.0 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
+    variance = prediction[0, :, 7] * confidence * 20.0 * 1000  # J-MOD2 was trained with normalized variances scaled
     # down by 1000
 
     img_width = 256
@@ -368,8 +368,8 @@ def get_detected_obstacles_from_detector_multiclass_3(prediction, confidence_thr
     y_pos = prediction[0, :, 4] * confidence
     ws = prediction[0, :, 5] * confidence
     hs = prediction[0, :, 6] * confidence
-    depth = prediction[0, :, 7] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
-    variance = prediction[0, :, 8] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled
+    depth = prediction[0, :, 7] * confidence * 20.0 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
+    variance = prediction[0, :, 8] * confidence * 20.0 * 1000  # J-MOD2 was trained with normalized variances scaled
     # down by 1000
 
     img_width = 256
@@ -427,8 +427,8 @@ def get_detected_obstacles_from_detector_multiclass_4(prediction, confidence_thr
     y_pos = prediction[0, :, 5] * confidence
     ws = prediction[0, :, 6] * confidence
     hs = prediction[0, :, 7] * confidence
-    depth = prediction[0, :, 8] * confidence * 19.75 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
-    variance = prediction[0, :, 9] * confidence * 19.75 * 1000  # J-MOD2 was trained with normalized variances scaled
+    depth = prediction[0, :, 8] * confidence * 20.0 * 10  # J-MOD2 was trained with normalized depths scaled down by 10
+    variance = prediction[0, :, 9] * confidence * 20.0 * 1000  # J-MOD2 was trained with normalized variances scaled
     # down by 1000
 
     img_width = 256
